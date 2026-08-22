@@ -101,5 +101,26 @@
     "noPlayers": "No players yet. Add your roster to get started.",
     "deleteConfirmTitle": "Remove player?",
     "deleteConfirmMessage": "This will remove {{name}} from the roster. Past match stats are kept."
+  },
+  "matches": {
+    "newMatch": "New Match",
+    "opponentName": "Opponent name",
+    "format": "Format",
+    "bestOf3": "Best of 3",
+    "bestOf5": "Best of 5",
+    "startMatch": "Start Match",
+    "selectTeam": "Team",
+    "noActiveTeam": "Select a team first",
+    "noPlayersWarning": "This team has no active players yet. Add your roster before starting a match."
+  },
+  "recording": {
+    "selectPlayer": "Select player",
+    "selectAction": "Select action",
+    "selectOutcome": "Select outcome",
+    "undoLast": "Undo Last",
+    "plusUs": "+1 Us",
+    "plusOpponent": "+1 Opponent",
+    "set": "Set {{number}}",
+    "recent": "Recent"
   }
 }

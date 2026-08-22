@@ -22,6 +22,7 @@ export default function RosterScreen() {
     db.select().from(players).where(eq(players.teamId, teamId))
   );
   const activePlayers = playerRows.filter((p) => !p.isDeleted);
+  const hasActiveRosterPlayers = activePlayers.some((p) => p.isActive);
 
   function confirmDeletePlayer(playerId: string, name: string) {
     Alert.alert(t("players.deleteConfirmTitle"), t("players.deleteConfirmMessage", { name }), [
@@ -38,7 +39,16 @@ export default function RosterScreen() {
     <YStack flex={1} padding="$4" gap="$3">
       <Stack.Screen options={{ title: team?.name ?? t("players.title") }} />
 
-      <XStack justifyContent="flex-end">
+      <XStack justifyContent="space-between" gap="$2">
+        <Button
+          theme="active"
+          disabled={!hasActiveRosterPlayers}
+          opacity={hasActiveRosterPlayers ? 1 : 0.5}
+          icon={<Ionicons name="play" size={16} />}
+          onPress={() => router.push({ pathname: "/matches/new", params: { teamId } })}
+        >
+          {t("matches.startMatch")}
+        </Button>
         <Button
           icon={<Ionicons name="add" size={18} />}
           onPress={() =>
