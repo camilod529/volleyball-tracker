@@ -176,5 +176,14 @@
     "other": "Otro",
     "selectTeamPrompt": "Selecciona un equipo para ver las estadísticas.",
     "noTeams": "Agrega un equipo primero para ver estadísticas."
+  },
+  "export": {
+    "title": "Exportar CSV",
+    "matchExportDescription": "Exporta el registro de jugadas de este partido como un archivo CSV, listo para un software de análisis o una hoja de cálculo.",
+    "teamExportDescription": "Exporta todas las jugadas registradas de todos los partidos de este equipo en un solo archivo CSV.",
+    "eventCount": "{{count}} jugadas",
+    "exportButton": "Exportar CSV",
+    "exportAll": "Exportar todo (CSV)",
+    "exportError": "Algo salió mal al exportar el archivo."
   }
 }

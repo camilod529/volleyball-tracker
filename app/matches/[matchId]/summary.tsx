@@ -2,6 +2,7 @@ import { and, asc, eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { Pressable } from "react-native";
 import {
   Button,
   H2,
@@ -13,6 +14,7 @@ import {
   XStack,
   YStack,
 } from "tamagui";
+import { Ionicons } from "@expo/vector-icons";
 
 import { db } from "@/src/db/client";
 import { actionEvents, matches, players, sets } from "@/src/db/schema";
@@ -67,7 +69,19 @@ export default function MatchSummaryScreen() {
 
   return (
     <ScrollView>
-      <Stack.Screen options={{ title: t("matches.summaryTitle") }} />
+      <Stack.Screen
+        options={{
+          title: t("matches.summaryTitle"),
+          headerRight: () => (
+            <Pressable
+              onPress={() => router.push({ pathname: "/matches/[matchId]/export", params: { matchId } })}
+              hitSlop={12}
+            >
+              <Ionicons name="share-outline" size={22} />
+            </Pressable>
+          ),
+        }}
+      />
       <YStack gap="$4" padding="$4">
         <YStack gap="$1">
           <H2>{t("matches.vs", { opponent: match.opponentName })}</H2>

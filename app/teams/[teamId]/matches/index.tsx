@@ -2,7 +2,9 @@ import { and, desc, eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { Pressable } from "react-native";
 import { ListItem, Separator, Text, YStack } from "tamagui";
+import { Ionicons } from "@expo/vector-icons";
 
 import { db } from "@/src/db/client";
 import { matches } from "@/src/db/schema";
@@ -22,7 +24,19 @@ export default function MatchHistoryScreen() {
 
   return (
     <YStack flex={1} padding="$4" gap="$3">
-      <Stack.Screen options={{ title: t("matches.matchHistory") }} />
+      <Stack.Screen
+        options={{
+          title: t("matches.matchHistory"),
+          headerRight: () => (
+            <Pressable
+              onPress={() => router.push({ pathname: "/teams/[teamId]/export", params: { teamId } })}
+              hitSlop={12}
+            >
+              <Ionicons name="share-outline" size={22} />
+            </Pressable>
+          ),
+        }}
+      />
 
       {matchRows.length === 0 ? (
         <YStack flex={1} alignItems="center" justifyContent="center">

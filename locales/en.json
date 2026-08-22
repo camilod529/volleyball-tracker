@@ -176,5 +176,14 @@
     "other": "Other",
     "selectTeamPrompt": "Select a team to see player stats.",
     "noTeams": "Add a team first to see stats."
+  },
+  "export": {
+    "title": "Export CSV",
+    "matchExportDescription": "Export this match's action log as a CSV file, ready for analyst software or a spreadsheet.",
+    "teamExportDescription": "Export every logged action across all of this team's matches as one CSV file.",
+    "eventCount": "{{count}} events",
+    "exportButton": "Export CSV",
+    "exportAll": "Export All (CSV)",
+    "exportError": "Something went wrong exporting the file."
   }
 }
