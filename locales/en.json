@@ -151,5 +151,30 @@
     "deleteConfirmCompletedSetMessage": "This set is already finished. Deleting this event could change how the set ended.",
     "deleteEventConfirmTitle": "Delete this event?",
     "deleteEventConfirmMessage": "Scores after it will be recalculated."
+  },
+  "stats": {
+    "attempts": "Attempts",
+    "aces": "Aces",
+    "errors": "Errors",
+    "acePct": "Ace %",
+    "rating": "Rating",
+    "passDistribution": "Perfect/Good/Poor/Error",
+    "passerRating": "Passer rating",
+    "kills": "Kills",
+    "killPct": "Kill %",
+    "efficiency": "Efficiency",
+    "stuffs": "Stuff blocks",
+    "touches": "Touches",
+    "blocksPerSet": "Blocks/set",
+    "successRate": "Success rate",
+    "assists": "Assists",
+    "noData": "No stats recorded yet.",
+    "matchStats": "Match Stats",
+    "seasonStats": "Season Stats",
+    "howWeScored": "How We Scored",
+    "howWeLostPoints": "How We Lost Points",
+    "other": "Other",
+    "selectTeamPrompt": "Select a team to see player stats.",
+    "noTeams": "Add a team first to see stats."
   }
 }

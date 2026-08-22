@@ -151,5 +151,30 @@
     "deleteConfirmCompletedSetMessage": "Este set ya finalizó. Eliminar esta jugada podría cambiar cómo terminó el set.",
     "deleteEventConfirmTitle": "¿Eliminar esta jugada?",
     "deleteEventConfirmMessage": "Los puntajes posteriores se recalcularán."
+  },
+  "stats": {
+    "attempts": "Intentos",
+    "aces": "Aces",
+    "errors": "Errores",
+    "acePct": "% de ace",
+    "rating": "Calificación",
+    "passDistribution": "Perfecta/Buena/Mala/Error",
+    "passerRating": "Calificación de recepción",
+    "kills": "Puntos de remate",
+    "killPct": "% de punto",
+    "efficiency": "Eficiencia",
+    "stuffs": "Tapones",
+    "touches": "Toques",
+    "blocksPerSet": "Bloqueos/set",
+    "successRate": "% de éxito",
+    "assists": "Asistencias",
+    "noData": "Aún no hay estadísticas registradas.",
+    "matchStats": "Estadísticas del partido",
+    "seasonStats": "Estadísticas de temporada",
+    "howWeScored": "Cómo anotamos",
+    "howWeLostPoints": "Cómo perdimos puntos",
+    "other": "Otro",
+    "selectTeamPrompt": "Selecciona un equipo para ver las estadísticas.",
+    "noTeams": "Agrega un equipo primero para ver estadísticas."
   }
 }

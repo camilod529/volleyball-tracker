@@ -1,12 +1,23 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Button, H2, ScrollView, Separator, Spinner, Text, XStack, YStack } from "tamagui";
+import {
+  Button,
+  H2,
+  ListItem,
+  ScrollView,
+  Separator,
+  Spinner,
+  Text,
+  XStack,
+  YStack,
+} from "tamagui";
 
 import { db } from "@/src/db/client";
-import { matches, sets } from "@/src/db/schema";
+import { actionEvents, matches, players, sets } from "@/src/db/schema";
 import { getMatchWinner } from "@/src/domain/scoring";
+import { computeHowWeLostPoints, computeHowWeScored, toStatsEvent } from "@/src/domain/stats";
 
 export default function MatchSummaryScreen() {
   const { matchId } = useLocalSearchParams<{ matchId: string }>();
@@ -18,6 +29,18 @@ export default function MatchSummaryScreen() {
 
   const { data: setRows } = useLiveQuery(
     db.select().from(sets).where(eq(sets.matchId, matchId)).orderBy(asc(sets.setNumber))
+  );
+
+  const { data: matchEvents } = useLiveQuery(
+    db
+      .select()
+      .from(actionEvents)
+      .where(and(eq(actionEvents.matchId, matchId), eq(actionEvents.isDeleted, false)))
+  );
+
+  const { data: rosterRows } = useLiveQuery(
+    db.select().from(players).where(and(eq(players.teamId, match?.teamId ?? ""), eq(players.isDeleted, false))),
+    [match?.teamId]
   );
 
   if (!match) {
@@ -37,6 +60,10 @@ export default function MatchSummaryScreen() {
     match.status === "completed"
       ? getMatchWinner(setWins, match.format as "best_of_3" | "best_of_5")
       : null;
+
+  const statsEvents = matchEvents.map(toStatsEvent);
+  const scored = computeHowWeScored(statsEvents);
+  const lost = computeHowWeLostPoints(statsEvents);
 
   return (
     <ScrollView>
@@ -87,7 +114,57 @@ export default function MatchSummaryScreen() {
             ))}
           </YStack>
         </YStack>
+
+        {scored.total > 0 && (
+          <YStack gap="$2" padding="$3" borderRadius="$4" backgroundColor="$color2">
+            <Text fontWeight="700">{t("stats.howWeScored")}</Text>
+            <StatRow label={t("actions.serve")} value={scored.aces} />
+            <StatRow label={t("actions.attack")} value={scored.kills} />
+            <StatRow label={t("actions.block")} value={scored.blocks} />
+            <StatRow label={t("stats.other")} value={scored.other} />
+          </YStack>
+        )}
+
+        {lost.total > 0 && (
+          <YStack gap="$2" padding="$3" borderRadius="$4" backgroundColor="$color2">
+            <Text fontWeight="700">{t("stats.howWeLostPoints")}</Text>
+            {Object.entries(lost.byAction).map(([actionType, count]) => (
+              <StatRow key={actionType} label={t(`actions.${actionType}`)} value={count} />
+            ))}
+          </YStack>
+        )}
+
+        {rosterRows.length > 0 && (
+          <YStack gap="$2">
+            <Text color="$color10">{t("stats.matchStats")}</Text>
+            <YStack borderRadius="$4" overflow="hidden">
+              {rosterRows.map((player, index) => (
+                <YStack key={player.id}>
+                  {index > 0 ? <Separator /> : null}
+                  <ListItem
+                    title={player.number != null ? `#${player.number} ${player.name}` : player.name}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/matches/[matchId]/players/[playerId]",
+                        params: { matchId, playerId: player.id },
+                      })
+                    }
+                  />
+                </YStack>
+              ))}
+            </YStack>
+          </YStack>
+        )}
       </YStack>
     </ScrollView>
+  );
+}
+
+function StatRow({ label, value }: { label: string; value: number }) {
+  return (
+    <XStack justifyContent="space-between">
+      <Text color="$color10">{label}</Text>
+      <Text fontWeight="600">{value}</Text>
+    </XStack>
   );
 }
