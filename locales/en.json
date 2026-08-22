@@ -204,6 +204,18 @@
     "languageEnglish": "English",
     "languageSpanish": "Español",
     "about": "About",
-    "aboutBody": "Volleyball Tracker stores everything on this device. Use Export CSV on a team or match to share stats with an analyst."
+    "aboutBody": "Volleyball Tracker stores everything on this device. Use Export CSV on a team or match to share stats with an analyst.",
+    "cloudSync": "Cloud Sync",
+    "cloudSyncDescription": "Everything works fully offline. Sync only happens when you tap \"Sync Now\" — never automatically.",
+    "apiUrlPlaceholder": "API URL (e.g. https://your-app.up.railway.app)",
+    "apiKeyPlaceholder": "API Key",
+    "saveConnection": "Save Connection",
+    "editConnection": "Edit",
+    "clearConnection": "Disconnect",
+    "connectedTo": "Connected to {{url}}",
+    "syncNow": "Sync Now",
+    "syncing": "Syncing…",
+    "lastSynced": "Last synced: {{date}}",
+    "syncErrorTitle": "Sync failed"
   }
 }

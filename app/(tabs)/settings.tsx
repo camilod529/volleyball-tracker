@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Label, ScrollView, Text, XStack, YStack } from 'tamagui';
 
+import { CloudSyncSection } from '@/src/components/settings/CloudSyncSection';
 import { SelectableChip } from '@/src/components/shared/SelectableChip';
 import {
   useSettingsStore,
@@ -64,6 +65,8 @@ export default function SettingsScreen() {
             ))}
           </XStack>
         </YStack>
+
+        <CloudSyncSection />
 
         <YStack gap="$2">
           <Label>{t('settings.about')}</Label>
