@@ -15,7 +15,7 @@ Requires Docker (for a disposable local MySQL — **not** the production Hosting
 ```bash
 npm install
 docker compose up -d          # starts local MySQL on localhost:3306
-cp .env.example .env          # then edit DATABASE_URL to point at the local Docker DB, set any API_KEY
+cp .env.example .env          # then edit the DB_* vars to point at the local Docker DB, set any API_KEY
 npm run db:migrate            # applies src/db/migrations against it
 npm run start:dev             # http://localhost:3000, restarts on file changes
 ```
@@ -23,7 +23,11 @@ npm run start:dev             # http://localhost:3000, restarts on file changes
 `.env` for local dev, matching `docker-compose.yml`'s defaults:
 
 ```
-DATABASE_URL=mysql://volleyball:volleyball@127.0.0.1:3306/volleyball_tracker
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=volleyball
+DB_PASSWORD=volleyball
+DB_NAME=volleyball_tracker
 API_KEY=local-dev-test-key
 PORT=3000
 ```
@@ -50,18 +54,18 @@ Covers the auth guard and the last-write-wins merge decision (`shouldWriteIncomi
 
 ### 1. Enable remote access on the Hostinger MySQL database
 
-By default Hostinger's MySQL only accepts connections from within its own network. In hPanel: **Databases → MySQL Databases → Remote MySQL**, add the IP address(es) your API host will connect from (Railway/Render publish their outbound IPs, or use `%` to allow any IP if your database user's password is strong — narrower is better if the host's IP is stable). Note the host, port, database name, username, and password shown there — that's what builds `DATABASE_URL`.
+By default Hostinger's MySQL only accepts connections from within its own network. In hPanel: **Databases → MySQL Databases → Remote MySQL**, add the IP address(es) your API host will connect from (Railway/Render publish their outbound IPs, or use `%` to allow any IP if your database user's password is strong — narrower is better if the host's IP is stable). hPanel shows you the host, port, database name, username, and password directly — that's exactly `DB_HOST`/`DB_PORT`/`DB_NAME`/`DB_USER`/`DB_PASSWORD` below, no need to assemble a connection string by hand (and no risk of a password with special characters breaking one).
 
 ### 2. Deploy the API (Railway)
 
 1. Push this repo (or just the `server/` folder, depending on how you set up the Railway project) to GitHub.
 2. In Railway: New Project → Deploy from GitHub repo, pointing at this `server/` directory as the root.
-3. Set environment variables in Railway's dashboard: `DATABASE_URL` (from step 1), `API_KEY` (generate one: `openssl rand -hex 32`). Railway sets `PORT` itself.
+3. In Railway's **Variables** tab, add each of these individually (copy-paste straight from hPanel — no URL to construct): `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, plus `API_KEY` (generate one: `openssl rand -hex 32`). Railway sets `PORT` itself.
 4. Railway builds with `npm run build` and starts with `npm run start:prod` (Nest's defaults) — no extra config needed for a standard Node buildpack.
-5. Once deployed, run `npm run db:migrate` **once** against the production `DATABASE_URL` to create the tables — either locally with your `.env` temporarily pointed at production, or as a one-off Railway command/shell.
+5. Once deployed, run `npm run db:migrate` **once** against production to create the tables — either locally with your `.env` temporarily pointed at production, or as a one-off Railway command/shell.
 6. Confirm with `curl https://<your-railway-url>/health`.
 
-(Render works the same way — connect the repo, set the same env vars, build command `npm run build`, start command `npm run start:prod`.)
+(Render works the same way — connect the repo, set the same env vars, build command `npm run build`, start command `npm run start:prod`. A single `DATABASE_URL` also still works instead of the `DB_*` vars, if you ever point this at a host that hands you one directly — see `.env.example`.)
 
 ### 3. Point the app at it
 
