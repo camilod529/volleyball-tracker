@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { MigrationGate } from '@/src/db/MigrationGate';
+import { useConnectionStore } from '@/src/sync/connectionStore';
 import { useSettingsStore } from '@/src/state/settingsStore';
 import tamaguiConfig from '@/src/theme/tamagui.config';
 import i18n, { getDeviceLanguage } from '@/src/i18n';
@@ -57,6 +58,10 @@ function RootLayoutNav() {
     const language = languagePreference === 'system' ? getDeviceLanguage() : languagePreference;
     void i18n.changeLanguage(language);
   }, [languagePreference]);
+
+  useEffect(() => {
+    void useConnectionStore.getState().load();
+  }, []);
 
   return (
     <TamaguiProvider config={tamaguiConfig} defaultTheme={effectiveColorScheme ?? 'light'}>
