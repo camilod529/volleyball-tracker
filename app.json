@@ -43,6 +43,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9ed950c1-a81a-4102-8e35-3a1ec7a0cbe7"
+      }
+    },
+    "owner": "chokpiks-team"
   }
 }
