@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { KeyboardAvoidingView, Platform } from "react-native";
 import { ScrollView, Spinner, YStack } from "tamagui";
 
 import { PlayerForm, type PlayerFormValues } from "@/src/components/roster/PlayerForm";
@@ -25,24 +26,29 @@ export default function EditPlayerScreen() {
   }
 
   return (
-    <ScrollView>
-      <Stack.Screen options={{ title: t("players.editPlayer") }} />
-      {player ? (
-        <PlayerForm
-          initialValues={{
-            name: player.name,
-            number: player.number,
-            positions: parsePositions(player.positions),
-            isActive: player.isActive,
-          }}
-          submitLabel={t("common.save")}
-          onSubmit={handleSubmit}
-        />
-      ) : (
-        <YStack flex={1} alignItems="center" justifyContent="center" padding="$6">
-          <Spinner />
-        </YStack>
-      )}
-    </ScrollView>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView keyboardShouldPersistTaps="handled">
+        <Stack.Screen options={{ title: t("players.editPlayer") }} />
+        {player ? (
+          <PlayerForm
+            initialValues={{
+              name: player.name,
+              number: player.number,
+              positions: parsePositions(player.positions),
+              isActive: player.isActive,
+            }}
+            submitLabel={t("common.save")}
+            onSubmit={handleSubmit}
+          />
+        ) : (
+          <YStack flex={1} alignItems="center" justifyContent="center" padding="$6">
+            <Spinner />
+          </YStack>
+        )}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
