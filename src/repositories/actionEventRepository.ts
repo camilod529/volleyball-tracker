@@ -68,6 +68,7 @@ export function createActionEventRepository(db: AppDatabase): ActionEventReposit
       const ourScoreAfter = ourScoreSoFar + (pointImpact === "our_point" ? 1 : 0);
       const opponentScoreAfter = opponentScoreSoFar + (pointImpact === "opponent_point" ? 1 : 0);
 
+      const now = new Date().toISOString();
       const [row] = await db
         .insert(actionEvents)
         .values({
@@ -77,6 +78,9 @@ export function createActionEventRepository(db: AppDatabase): ActionEventReposit
           sequenceInSet: existing.length + 1,
           ourScoreAfter,
           opponentScoreAfter,
+          occurredAt: now,
+          createdAt: now,
+          updatedAt: now,
         })
         .returning();
       return row;

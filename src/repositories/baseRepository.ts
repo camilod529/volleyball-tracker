@@ -28,9 +28,15 @@ export function createBaseRepository<TTable extends SoftDeletableTable, TSelect,
 
   return {
     async create(input: TCreate) {
+      const now = new Date().toISOString();
       const [row] = await db
         .insert(dynamicTable)
-        .values({ id: uuidv4(), ...(input as Record<string, unknown>) })
+        .values({
+          ...(input as Record<string, unknown>),
+          id: uuidv4(),
+          createdAt: now,
+          updatedAt: now,
+        })
         .returning();
       return row as TSelect;
     },
