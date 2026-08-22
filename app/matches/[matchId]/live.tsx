@@ -3,14 +3,14 @@ import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import * as Haptics from "expo-haptics";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Button, Spinner, Text, XStack, YStack } from "tamagui";
+import { Spinner, YStack } from "tamagui";
 
-import { ActionTypeRow } from "@/src/components/recording/ActionTypeRow";
-import { OutcomePicker } from "@/src/components/recording/OutcomePicker";
-import { PlayerGrid } from "@/src/components/recording/PlayerGrid";
 import { Scoreboard } from "@/src/components/recording/Scoreboard";
 import { SetCompletePanel } from "@/src/components/recording/SetCompletePanel";
+import { StackedAccordionLayout } from "@/src/components/recording/layouts/StackedAccordionLayout";
+import { ThreeColumnLayout } from "@/src/components/recording/layouts/ThreeColumnLayout";
+import type { RecordingLayoutProps } from "@/src/components/recording/layouts/types";
+import { TwoColumnLayout } from "@/src/components/recording/layouts/TwoColumnLayout";
 import { db } from "@/src/db/client";
 import { actionEvents, matches, players, sets } from "@/src/db/schema";
 import {
@@ -20,13 +20,14 @@ import {
   isDecidingSet,
   STANDARD_SET,
 } from "@/src/domain/scoring";
+import { useResponsiveLayout, type RecordingLayoutKind } from "@/src/hooks/useResponsiveLayout";
 import { actionEventRepository, matchRepository, setRepository } from "@/src/repositories";
 import { useMatchSessionStore } from "@/src/state/matchSessionStore";
 
 export default function LiveRecordingScreen() {
   const { matchId } = useLocalSearchParams<{ matchId: string }>();
-  const { t } = useTranslation();
   const router = useRouter();
+  const layoutKind = useResponsiveLayout();
   const [finalizing, setFinalizing] = useState(false);
 
   const { data: matchRows } = useLiveQuery(db.select().from(matches).where(eq(matches.id, matchId)));
@@ -185,32 +186,36 @@ export default function LiveRecordingScreen() {
           submitting={finalizing}
           onContinue={handleFinalizeSet}
         />
-      ) : !selectedPlayer ? (
-        <PlayerGrid players={activePlayers} recentPlayerId={recentPlayerId} onSelect={selectPlayer} />
       ) : (
-        <YStack flex={1}>
-          <XStack padding="$3" alignItems="center" gap="$2">
-            <Button size="$2" chromeless onPress={resetSelection}>
-              {selectedPlayer.number != null ? `#${selectedPlayer.number} ` : ""}
-              {selectedPlayer.name}
-            </Button>
-            <Text color="$color10">›</Text>
-          </XStack>
-
-          {!selectedActionType ? (
-            <ActionTypeRow onSelect={selectAction} />
-          ) : (
-            <YStack flex={1}>
-              <XStack paddingHorizontal="$3" alignItems="center" gap="$2">
-                <Button size="$2" chromeless onPress={clearAction}>
-                  {t(`actions.${selectedActionType}`)}
-                </Button>
-              </XStack>
-              <OutcomePicker actionType={selectedActionType} onSelect={handleSelectOutcome} />
-            </YStack>
-          )}
-        </YStack>
+        <RecordingLayout
+          kind={layoutKind}
+          players={activePlayers}
+          recentPlayerId={recentPlayerId}
+          selectedPlayer={selectedPlayer}
+          selectedActionType={selectedActionType}
+          onSelectPlayer={selectPlayer}
+          onSelectAction={selectAction}
+          onSelectOutcome={handleSelectOutcome}
+          onResetPlayer={resetSelection}
+          onClearAction={clearAction}
+        />
       )}
     </YStack>
   );
+}
+
+function RecordingLayout({
+  kind,
+  ...props
+}: RecordingLayoutProps & { kind: RecordingLayoutKind }) {
+  switch (kind) {
+    case "phone-landscape":
+    case "tablet-landscape":
+      return <ThreeColumnLayout {...props} />;
+    case "tablet-portrait":
+      return <TwoColumnLayout {...props} />;
+    case "phone-portrait":
+    default:
+      return <StackedAccordionLayout {...props} />;
+  }
 }
