@@ -1,73 +1,89 @@
-# The sync seam
+# Sync
 
-The app is fully local today — everything lives in on-device SQLite, there is no
-network layer, no auth, and no server. This doc is about the seam that was left
-in place on purpose, so a future sync backend can be added without redesigning
-the data model or rewriting the screens.
+The app is offline-first: every screen reads and writes local SQLite only, and
+that never changes based on whether a cloud connection exists. Cloud sync is a
+separate, manual, two-way operation the user triggers from **Settings > Cloud
+Sync** — never automatic or backgrounded — because courtside connectivity is
+unreliable. For the exact wire contract (row shapes, endpoints, conflict
+rule), see [`SYNC_PROTOCOL.md`](./SYNC_PROTOCOL.md); this doc covers how the
+pieces fit together.
 
-## What's already in place
+## Architecture
 
-**Repository pattern.** Every table has a repository (`src/repositories/*Repository.ts`)
-implementing the shared `Repository<T>` interface (`src/repositories/types.ts`):
-
-```ts
-interface Repository<TSelect, TCreate, TUpdate> {
-  create(input: TCreate): Promise<TSelect>;
-  update(id: string, input: TUpdate): Promise<TSelect>;
-  softDelete(id: string): Promise<void>;
-  getById(id: string): Promise<TSelect | undefined>;
-  list(): Promise<TSelect[]>;
-}
+```
+┌─────────────────────┐        HTTPS + X-API-Key        ┌──────────────────────┐        ┌──────────────┐
+│  Expo app (client)  │ ───────────────────────────────▶ │  NestJS API (server/)│ ─────▶ │ MySQL         │
+│  local SQLite (all  │ ◀─────────────────────────────── │  hosted on Railway    │        │ hosted on     │
+│  screens read here) │        POST /sync/push            │                       │        │ Hostinger     │
+│                      │        GET  /sync/pull            │                       │        │               │
+└─────────────────────┘                                   └──────────────────────┘        └──────────────┘
 ```
 
-Screens and the recalculation service call these interfaces, not the SQLite
-driver directly. `src/repositories/index.ts` is the single place that
-constructs the concrete (currently SQLite-backed) instances and exports them —
-that's the seam. A sync-aware build would change what gets constructed there
-without touching any call site.
+- **Client** (`src/`): fully local app + the sync client under `src/sync/`.
+- **Server** (`server/`): standalone NestJS project (own `package.json`,
+  excluded from the root Expo project's tsc/eslint/Metro/Jest — see its
+  README) exposing `/sync/push`, `/sync/pull`, `/health`.
+- **Databases**: MySQL on Hostinger is the durable store; local Docker MySQL
+  (`server/docker-compose.yml`) is for development only and is never pointed
+  at production data.
 
-**Schema readiness** (`src/db/schema.ts`), on every table:
-- UUID primary keys (generated client-side), not autoincrement integers —
-  no collision risk when two devices create rows independently.
-- `created_at` / `updated_at` timestamps.
-- `is_deleted` soft-delete instead of hard deletes, so a sync engine has
-  something to diff against instead of silently losing rows a peer hasn't
-  seen yet.
-- `sync_status` column, currently always `'local_only'` and otherwise unused.
-  It exists so a sync engine can move rows through `'pending_sync'` →
-  `'synced'` without a migration that touches every table again.
+## Client-side pieces (`src/sync/`)
 
-**Reactive UI is decoupled from the repository layer.** Screens read live data
-via Drizzle's `useLiveQuery(db.select()...)` directly against the local SQLite
-`db` (see `src/db/client.ts`), not through the repositories. This matters for
-sync: a future sync engine pulling remote changes into local SQLite would just
-be another writer to the same tables — every screen already re-renders on any
-write to a table it's watching, regardless of what wrote it.
+- **`connectionStore.ts`** — the API base URL + key, stored in
+  `expo-secure-store` (Keychain/Keystore), not AsyncStorage, since they're
+  credentials. Supports "one as a default, but possible to have none":
+  - A default connection can be compiled into the build via
+    `EXPO_PUBLIC_API_BASE_URL` / `EXPO_PUBLIC_API_KEY` (see `.env.example`).
+  - `load()` uses that default only if the user has never explicitly saved or
+    cleared a connection.
+  - `clearConnection()` writes an explicit tombstone (`sync_explicitly_cleared`)
+    so a cleared connection stays cleared across restarts instead of falling
+    back to the compiled-in default again.
+  - `setConnection()` (Settings > Cloud Sync) overrides the default and
+    clears that tombstone.
+- **`syncStatusStore.ts`** — `lastSyncedAt` watermark (persisted via
+  AsyncStorage — not sensitive, unlike the credentials above) plus in-memory
+  `phase`/`lastError` for the Settings UI. `lastSyncedAt` is always the
+  *server's* clock (`serverTime` from the last successful sync response), not
+  the device's, to avoid clock-skew compounding across syncs.
+- **`syncMerge.ts`** — the pure last-write-wins decision function. Kept as an
+  independent implementation from the server's copy (`server/src/sync/sync.merge.ts`)
+  per `SYNC_PROTOCOL.md` — the two projects don't share code.
+- **`syncEngine.ts`** — `collectLocalChanges`/`applyRemoteChanges` (each
+  independently unit-tested against `createTestDb()`) and `runSync`, the
+  single entry point Settings calls: pushes local changes since the
+  watermark, then pulls and applies remote changes, in the FK-safe table
+  order (`teams` → `players` → `matches` → `sets` → `actionEvents`) both ways.
 
-## What a sync backend would still need to add
+## UI
 
-None of this exists yet; it's the actual work of a "v2":
+`src/components/settings/CloudSyncSection.tsx`, rendered in
+`app/(tabs)/settings.tsx`. Shows the current connection (or an editable
+URL/key form if none is set), a **Sync Now** button that's disabled mid-sync,
+last-synced time, and a plain-language reminder that sync is manual and the
+app works fully offline. "Disconnect" clears the connection back to
+local-only.
 
-- **A remote repository per entity** (e.g. `createRemoteActionEventRepository`)
-  implementing the same `Repository<T>` interface against whatever backend is
-  chosen (REST API, Supabase, Firebase, etc.) — swapped in at
-  `src/repositories/index.ts`, or composed with the local one behind a single
-  exported instance.
-- **A sync engine/reconciler** that walks `sync_status`, pushes local changes,
-  pulls remote changes into local SQLite, and decides conflict resolution
-  (last-write-wins using `updated_at`? server-authoritative? field-level
-  merge?) — not designed yet, and genuinely needs a decision once there's a
-  real backend to reconcile against.
-- **Auth/session management** — there is none today; every row is implicitly
-  "owned" by whoever's device it's on.
-- **Background sync scheduling / retry / offline queueing** for spotty
-  courtside connectivity, which is the realistic environment this app runs in.
+## Testing
 
-## Why this shape
+- **Pure logic** (`syncMerge.ts` both sides): plain Jest unit tests.
+- **Client DB-touching logic** (`collectLocalChanges`/`applyRemoteChanges`):
+  Jest against the in-memory `createTestDb()`, same pattern as the
+  repository tests — no mocks. `runSync`'s production `db` is a lazy dynamic
+  import specifically so importing `syncEngine.ts` in a test file never
+  touches the native `expo-sqlite` driver.
+- **Server DB-touching logic**: Jest unit tests plus manual `curl` runs
+  against a real local Docker MySQL instance (auth rejection, full
+  push/pull round-trip, last-write-wins in both directions, `?since=`
+  filtering) — see `server/README.md`.
+- Screens (Settings UI, actually tapping Sync Now against a deployed API)
+  are manual-verification lane, same as the rest of the app's UI.
 
-The goal wasn't to half-build a sync system — it was to avoid the two
-mistakes that make sync painful to retrofit later: integer primary keys that
-collide across devices, and hard deletes that give a reconciler nothing to
-work with. Everything else (the actual network code, conflict resolution,
-auth) is deferred until there's a concrete backend to design against, since
-guessing at that API now would likely just be wrong.
+## Known, accepted limitation
+
+Last-write-wins by `updatedAt` means a true concurrent edit to the *same row*
+from two devices between syncs can lose one side's change — there's no
+field-level merge or CRDT behavior. Given the actual usage pattern (one coach
+per device session, occasional cross-device sync rather than two people
+editing the same match live), this was judged an acceptable tradeoff. See
+`SYNC_PROTOCOL.md` for the full reasoning.
