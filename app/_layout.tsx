@@ -3,7 +3,7 @@ import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { TamaguiProvider } from 'tamagui';
+import { PortalProvider, TamaguiProvider } from 'tamagui';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
@@ -51,13 +51,15 @@ function RootLayoutNav() {
 
   return (
     <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme ?? 'light'}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <MigrationGate>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack>
-        </MigrationGate>
-      </ThemeProvider>
+      <PortalProvider shouldAddRootHost>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <MigrationGate>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            </Stack>
+          </MigrationGate>
+        </ThemeProvider>
+      </PortalProvider>
     </TamaguiProvider>
   );
 }
