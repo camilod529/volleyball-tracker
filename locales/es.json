@@ -209,6 +209,8 @@
     "cloudSyncDescription": "Todo funciona sin conexión. La sincronización solo ocurre cuando presionas \"Sincronizar ahora\" — nunca automáticamente.",
     "apiUrlPlaceholder": "URL de la API (ej. https://tu-app.up.railway.app)",
     "apiKeyPlaceholder": "Clave de API",
+    "showApiKey": "Mostrar clave de API",
+    "hideApiKey": "Ocultar clave de API",
     "saveConnection": "Guardar conexión",
     "editConnection": "Editar",
     "clearConnection": "Desconectar",

@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
@@ -29,6 +30,7 @@ export function CloudSyncSection() {
   const [editing, setEditing] = useState(!configured);
   const [urlInput, setUrlInput] = useState(apiBaseUrl ?? "");
   const [keyInput, setKeyInput] = useState(apiKey ?? "");
+  const [showApiKey, setShowApiKey] = useState(false);
 
   const isSyncing = phase === "syncing";
 
@@ -83,14 +85,30 @@ export function CloudSyncSection() {
             autoCorrect={false}
             keyboardType="url"
           />
-          <Input
-            placeholder={t("settings.apiKeyPlaceholder")}
-            value={keyInput}
-            onChangeText={setKeyInput}
-            autoCapitalize="none"
-            autoCorrect={false}
-            secureTextEntry
-          />
+          <XStack alignItems="center">
+            <Input
+              flex={1}
+              paddingRight="$8"
+              placeholder={t("settings.apiKeyPlaceholder")}
+              value={keyInput}
+              onChangeText={setKeyInput}
+              autoCapitalize="none"
+              autoCorrect={false}
+              secureTextEntry={!showApiKey}
+            />
+            <Button
+              position="absolute"
+              right="$1"
+              chromeless
+              size="$2"
+              circular
+              accessibilityLabel={
+                showApiKey ? t("settings.hideApiKey") : t("settings.showApiKey")
+              }
+              icon={<Ionicons name={showApiKey ? "eye-off" : "eye"} size={18} />}
+              onPress={() => setShowApiKey((v) => !v)}
+            />
+          </XStack>
           <XStack gap="$2">
             <Button
               flex={1}

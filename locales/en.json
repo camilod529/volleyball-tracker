@@ -209,6 +209,8 @@
     "cloudSyncDescription": "Everything works fully offline. Sync only happens when you tap \"Sync Now\" — never automatically.",
     "apiUrlPlaceholder": "API URL (e.g. https://your-app.up.railway.app)",
     "apiKeyPlaceholder": "API Key",
+    "showApiKey": "Show API key",
+    "hideApiKey": "Hide API key",
     "saveConnection": "Save Connection",
     "editConnection": "Edit",
     "clearConnection": "Disconnect",
