@@ -6,9 +6,9 @@ The contract between the Expo app (client) and the NestJS API (`server/`). Both 
 
 - **Two-way, manual sync.** Nothing syncs automatically or in the background — the user taps "Sync Now" in Settings. The app must be fully usable offline; sync is purely additive.
 - **Conflict rule: last-write-wins by `updatedAt`.** Every row already carries `createdAt`/`updatedAt` (maintained by existing repository code on every write, no schema change needed for this). Whichever side has the newer `updatedAt` for a given row id wins; the older side's write is discarded for that row on that sync. This is a real, accepted limitation — true concurrent edits to the *same row* from two devices between syncs can lose data. Given the actual usage pattern (one coach logging per device session, occasional cross-device sync rather than simultaneous live editing of the same match), this is judged an acceptable tradeoff over building real CRDT-style merging.
-- **Deletes are soft.** `isDeleted: true` is just a normal field update, so it's captured by the same `updatedAt` watermark mechanism as any other change — no special delete endpoint.
+- **Deletes are soft.** `isDeleted: true` is just a normal field update, propagated like any other change — no special delete endpoint.
 - **All local data syncs, unfiltered.** No per-team scoping — everyone with the shared API key sees and can write all synced data. This matches the "single shared key, two-way sync so multiple coaches can log the same team" requirement; per-team access control is a future refinement if ever needed.
-- **The watermark is the server's clock, not the client's.** After a successful pull, the client stores the `serverTime` the response returned (not its own `Date.now()`) as the cutoff for the *next* pull's `?since=`. This avoids client/server clock skew compounding over repeated syncs. Push doesn't use a watermark at all — the client always pushes every row with `updatedAt` newer than its last successful sync in either direction.
+- **The watermark is the server's clock, not the client's — and pull filtering never touches `updatedAt`.** `updatedAt` is client-clock-based and only used for the LWW conflict decision above. Incremental pulls (`?since=`) instead filter on a separate, server-only `syncedAt` column, stamped with the server's own clock every time a row is written by `/sync/push` (see `server/src/db/schema.ts`). If pull filtering compared `since` — a value drawn from the server's clock — against `updatedAt` — a value drawn from whichever client wrote the row — a device with a clock behind the server's could push a row that a peer's next pull would then filter out forever (its `updatedAt` looks "older than `since`" even though the server only just received it), permanently desyncing that row. Keeping `since`/`syncedAt` in the same clock domain avoids that. `syncedAt` is server-internal: it's never sent to the client and never trusted from one.
 
 ## Auth
 
@@ -94,6 +94,6 @@ Response: `200 { "ok": true, "serverTime": "<ISO 8601>" }`.
 
 ### `GET /sync/pull?since=<ISO 8601, omit for "everything">`
 
-Server behavior: for each table in FK order, return every row where `updatedAt > since` (or all rows if `since` is omitted — first sync on a new device).
+Server behavior: for each table in FK order, return every row where `syncedAt > since` (or all rows if `since` is omitted — first sync on a new device). `syncedAt` is a server-only column (see the Model section above) — it's stripped from every row before it goes out in the response.
 
 Response: `200 SyncTablesPayload & { "serverTime": "<ISO 8601>" }`. Client applies the same last-write-wins rule locally (skip a row if its local `updatedAt` is already newer than the incoming one — can happen if a local edit happened after the push but before the pull completed in the same sync run), upserts in the same FK-safe table order, then stores `serverTime` as the new watermark.

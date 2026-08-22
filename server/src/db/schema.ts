@@ -21,6 +21,14 @@ const timestamps = {
   createdAt: varchar('created_at', { length: 32 }).notNull(),
   updatedAt: varchar('updated_at', { length: 32 }).notNull(),
   isDeleted: boolean('is_deleted').notNull().default(false),
+  // Server-only — never sent to or trusted from a client. Stamped with this
+  // server's own clock every time a row is written via /sync/push, and used
+  // (instead of updatedAt) to filter /sync/pull's `since`. updatedAt is
+  // client-clock-based, so two devices with skewed clocks could make a row
+  // permanently miss the `updatedAt > since` filter on future pulls; syncedAt
+  // is always compared against values from this same server clock, so that
+  // can't happen. See docs/SYNC_PROTOCOL.md.
+  syncedAt: varchar('synced_at', { length: 32 }).notNull(),
 };
 
 // UUIDs are always 36 characters.
@@ -35,7 +43,7 @@ export const teams = mysqlTable(
     color: varchar('color', { length: 32 }),
     ...timestamps,
   },
-  (table) => [index('teams_updated_at_idx').on(table.updatedAt)],
+  (table) => [index('teams_synced_at_idx').on(table.syncedAt)],
 );
 
 export const players = mysqlTable(
@@ -51,7 +59,7 @@ export const players = mysqlTable(
     isActive: boolean('is_active').notNull().default(true),
     ...timestamps,
   },
-  (table) => [index('players_updated_at_idx').on(table.updatedAt)],
+  (table) => [index('players_synced_at_idx').on(table.syncedAt)],
 );
 
 export const matches = mysqlTable(
@@ -67,7 +75,7 @@ export const matches = mysqlTable(
     notes: text('notes'),
     ...timestamps,
   },
-  (table) => [index('matches_updated_at_idx').on(table.updatedAt)],
+  (table) => [index('matches_synced_at_idx').on(table.syncedAt)],
 );
 
 export const sets = mysqlTable(
@@ -84,7 +92,7 @@ export const sets = mysqlTable(
     endedAt: varchar('ended_at', { length: 32 }),
     ...timestamps,
   },
-  (table) => [index('sets_updated_at_idx').on(table.updatedAt)],
+  (table) => [index('sets_synced_at_idx').on(table.syncedAt)],
 );
 
 export const actionEvents = mysqlTable(
@@ -108,8 +116,9 @@ export const actionEvents = mysqlTable(
     updatedAt: varchar('updated_at', { length: 32 }).notNull(),
     isDeleted: boolean('is_deleted').notNull().default(false),
     deletedAt: varchar('deleted_at', { length: 32 }),
+    syncedAt: varchar('synced_at', { length: 32 }).notNull(),
   },
-  (table) => [index('action_events_updated_at_idx').on(table.updatedAt)],
+  (table) => [index('action_events_synced_at_idx').on(table.syncedAt)],
 );
 
 export type Team = typeof teams.$inferSelect;
