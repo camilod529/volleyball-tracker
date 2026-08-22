@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button, Dialog, ScrollView, Text, XStack, YStack } from "tamagui";
 import { Ionicons } from "@expo/vector-icons";
 
+import { SelectableChip } from "@/src/components/shared/SelectableChip";
 import type { ActionEvent, Player } from "@/src/db/schema";
 import { ACTION_OUTCOMES, RECORDABLE_ACTION_TYPES, type ActionType } from "@/src/domain/outcomes";
 
@@ -77,15 +78,15 @@ function EditEventForm({
             <Text color="$color10">{t("recording.selectPlayer")}</Text>
             <XStack flexWrap="wrap" gap="$2">
               {players.map((player) => (
-                <Button
+                <SelectableChip
                   key={player.id}
                   size="$3"
-                  theme={player.id === playerId ? "active" : undefined}
+                  selected={player.id === playerId}
                   onPress={() => setPlayerId(player.id)}
                 >
                   {player.number != null ? `#${player.number} ` : ""}
                   {player.name}
-                </Button>
+                </SelectableChip>
               ))}
             </XStack>
           </YStack>
@@ -96,17 +97,17 @@ function EditEventForm({
             <Text color="$color10">{t("recording.selectAction")}</Text>
             <XStack flexWrap="wrap" gap="$2">
               {RECORDABLE_ACTION_TYPES.map((type) => (
-                <Button
+                <SelectableChip
                   key={type}
                   size="$3"
-                  theme={type === actionType ? "active" : undefined}
+                  selected={type === actionType}
                   onPress={() => {
                     setActionType(type);
                     setOutcomeCode("");
                   }}
                 >
                   {t(`actions.${type}`)}
-                </Button>
+                </SelectableChip>
               ))}
             </XStack>
           </YStack>

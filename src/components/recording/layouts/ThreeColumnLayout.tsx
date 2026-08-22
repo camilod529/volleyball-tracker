@@ -9,11 +9,16 @@ import { PlayerGrid } from "@/src/components/recording/PlayerGrid";
 import type { RecordingLayoutProps } from "./types";
 
 interface ThreeColumnLayoutProps extends RecordingLayoutProps {
-  /** Tablet landscape's 4th column (Recent Events) — omit on phone landscape, which doesn't have room for it. */
+  /** Tablet landscape's 4th column (Recent Events). */
   recentEventsColumn?: ReactNode;
 }
 
-/** Phone/tablet landscape: players, actions, and outcomes all visible at once — width allows it, so no accordion collapsing is needed. */
+/**
+ * Tablet landscape only: players, actions, and outcomes all visible at once
+ * — width allows it, so no accordion collapsing is needed. Phone landscape
+ * doesn't have enough width per column for this to work well and uses
+ * StackedAccordionLayout instead (see live.tsx's layout switch).
+ */
 export function ThreeColumnLayout({
   players,
   recentPlayerId,
@@ -29,7 +34,12 @@ export function ThreeColumnLayout({
   return (
     <XStack flex={1}>
       <YStack flex={1} borderRightWidth={1} borderColor="$borderColor">
-        <PlayerGrid players={players} recentPlayerId={recentPlayerId} onSelect={onSelectPlayer} />
+        <PlayerGrid
+          players={players}
+          recentPlayerId={recentPlayerId}
+          onSelect={onSelectPlayer}
+          columns={2}
+        />
       </YStack>
 
       <YStack flex={1} borderRightWidth={1} borderColor="$borderColor">

@@ -49,21 +49,21 @@ describe("playerRepository", () => {
       teamId: teamA.id,
       name: "Camila",
       number: 7,
-      position: "setter",
+      positions: "setter",
       isActive: true,
     });
     await playerRepository.create({
       teamId: teamA.id,
       name: "Valentina",
       number: null,
-      position: "libero",
+      positions: "libero",
       isActive: true,
     });
     await playerRepository.create({
       teamId: teamB.id,
       name: "Other Team Player",
       number: 4,
-      position: "opposite",
+      positions: "opposite",
       isActive: true,
     });
 
@@ -89,7 +89,7 @@ describe("actionEventRepository", () => {
       teamId: team.id,
       name: "Camila",
       number: 7,
-      position: "outside_hitter",
+      positions: "outside_hitter",
       isActive: true,
     });
     const match = await matchRepository.create({

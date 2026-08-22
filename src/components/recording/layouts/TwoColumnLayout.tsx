@@ -7,7 +7,7 @@ import { PlayerGrid } from "@/src/components/recording/PlayerGrid";
 
 import type { RecordingLayoutProps } from "./types";
 
-/** Tablet portrait: player grid (grouped by position) on the left, action + outcome stacked on the right — no accordion, both stay mounted once a player is selected. */
+/** Tablet portrait: player grid on the left (fixed roster order — see the roster screen's reorder buttons), action + outcome stacked on the right — no accordion, both stay mounted once a player is selected. */
 export function TwoColumnLayout({
   players,
   recentPlayerId,
@@ -22,12 +22,7 @@ export function TwoColumnLayout({
   return (
     <XStack flex={1}>
       <ScrollView flex={1} borderRightWidth={1} borderColor="$borderColor">
-        <PlayerGrid
-          players={players}
-          recentPlayerId={recentPlayerId}
-          onSelect={onSelectPlayer}
-          groupByPosition
-        />
+        <PlayerGrid players={players} recentPlayerId={recentPlayerId} onSelect={onSelectPlayer} columns={2} />
       </ScrollView>
 
       <YStack flex={1}>

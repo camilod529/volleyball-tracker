@@ -9,7 +9,7 @@ import { PositionSelect } from "./PositionSelect";
 export interface PlayerFormValues {
   name: string;
   number: number | null;
-  position: PlayerPosition;
+  positions: PlayerPosition[];
   isActive: boolean;
 }
 
@@ -22,7 +22,7 @@ interface PlayerFormProps {
 const DEFAULT_VALUES: PlayerFormValues = {
   name: "",
   number: null,
-  position: "outside_hitter",
+  positions: ["outside_hitter"],
   isActive: true,
 };
 
@@ -30,12 +30,12 @@ export function PlayerForm({ initialValues, submitLabel, onSubmit }: PlayerFormP
   const { t } = useTranslation();
   const [name, setName] = useState(initialValues?.name ?? DEFAULT_VALUES.name);
   const [numberText, setNumberText] = useState(initialValues?.number?.toString() ?? "");
-  const [position, setPosition] = useState<PlayerPosition>(
-    initialValues?.position ?? DEFAULT_VALUES.position
+  const [positions, setPositions] = useState<PlayerPosition[]>(
+    initialValues?.positions ?? DEFAULT_VALUES.positions
   );
   const [isActive, setIsActive] = useState(initialValues?.isActive ?? DEFAULT_VALUES.isActive);
 
-  const canSubmit = name.trim().length > 0;
+  const canSubmit = name.trim().length > 0 && positions.length > 0;
 
   function handleSubmit() {
     if (!canSubmit) return;
@@ -43,7 +43,7 @@ export function PlayerForm({ initialValues, submitLabel, onSubmit }: PlayerFormP
     onSubmit({
       name: name.trim(),
       number: parsedNumber !== null && Number.isFinite(parsedNumber) ? parsedNumber : null,
-      position,
+      positions,
       isActive,
     });
   }
@@ -67,15 +67,20 @@ export function PlayerForm({ initialValues, submitLabel, onSubmit }: PlayerFormP
 
       <YStack gap="$2">
         <Label>{t("players.position")}</Label>
-        <PositionSelect value={position} onChange={setPosition} />
+        <PositionSelect value={positions} onChange={setPositions} />
       </YStack>
 
       <XStack alignItems="center" gap="$3">
         <Label htmlFor="player-active" flex={1}>
           {isActive ? t("players.active") : t("players.inactive")}
         </Label>
-        <Switch id="player-active" checked={isActive} onCheckedChange={setIsActive}>
-          <Switch.Thumb />
+        <Switch
+          id="player-active"
+          checked={isActive}
+          onCheckedChange={setIsActive}
+          backgroundColor={isActive ? "$blue8" : undefined}
+        >
+          <Switch.Thumb backgroundColor="white" />
         </Switch>
       </XStack>
 

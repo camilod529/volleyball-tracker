@@ -1,13 +1,15 @@
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, ListItem, ScrollView, Separator, Text, XStack, YStack } from "tamagui";
+import { ListItem, ScrollView, Separator, Text, XStack, YStack } from "tamagui";
 
+import { SelectableChip } from "@/src/components/shared/SelectableChip";
 import { db } from "@/src/db/client";
 import { actionEvents, players, teams } from "@/src/db/schema";
 import { computeHowWeLostPoints, computeHowWeScored, toStatsEvent } from "@/src/domain/stats";
+import { parsePositions } from "@/src/domain/outcomes";
 import { useActiveTeamStore } from "@/src/state/activeTeamStore";
 
 export default function StatsScreen() {
@@ -28,7 +30,8 @@ export default function StatsScreen() {
     db
       .select()
       .from(players)
-      .where(and(eq(players.teamId, selectedTeamId ?? ""), eq(players.isDeleted, false))),
+      .where(and(eq(players.teamId, selectedTeamId ?? ""), eq(players.isDeleted, false)))
+      .orderBy(asc(players.sortOrder)),
     [selectedTeamId]
   );
 
@@ -57,14 +60,14 @@ export default function StatsScreen() {
       <YStack padding="$4" gap="$4">
         <XStack flexWrap="wrap" gap="$2">
           {teamRows.map((team) => (
-            <Button
+            <SelectableChip
               key={team.id}
               size="$3"
-              theme={team.id === selectedTeamId ? "active" : undefined}
+              selected={team.id === selectedTeamId}
               onPress={() => setExplicitTeamId(team.id)}
             >
               {team.name}
-            </Button>
+            </SelectableChip>
           ))}
         </XStack>
 
@@ -91,7 +94,9 @@ export default function StatsScreen() {
                 {index > 0 ? <Separator /> : null}
                 <ListItem
                   title={player.number != null ? `#${player.number} ${player.name}` : player.name}
-                  subTitle={t(`positions.${player.position}`)}
+                  subTitle={parsePositions(player.positions)
+                    .map((position) => t(`positions.${position}`))
+                    .join(", ")}
                   onPress={() => router.push({ pathname: "/stats/[playerId]", params: { playerId: player.id } })}
                 />
               </YStack>

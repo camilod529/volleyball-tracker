@@ -28,7 +28,13 @@ export const players = sqliteTable("players", {
     .references(() => teams.id),
   name: text("name").notNull(),
   number: integer("number"),
-  position: text("position").notNull(),
+  // Comma-separated PlayerPosition codes (e.g. "setter,opposite") — a player
+  // can play more than one position. See src/domain/outcomes.ts for
+  // parsePositions/serializePositions.
+  positions: text("positions").notNull(),
+  // Manual roster order (e.g. starters first), maintained via the roster
+  // screen's reorder buttons. New players append after the current max.
+  sortOrder: integer("sort_order").notNull().default(0),
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
   ...timestamps,
 });

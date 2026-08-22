@@ -20,10 +20,11 @@ import { db } from "@/src/db/client";
 import { actionEvents, matches, players, sets } from "@/src/db/schema";
 import { getMatchWinner } from "@/src/domain/scoring";
 import { computeHowWeLostPoints, computeHowWeScored, toStatsEvent } from "@/src/domain/stats";
+import { formatMatchDateTime } from "@/src/utils/formatMatchDateTime";
 
 export default function MatchSummaryScreen() {
   const { matchId } = useLocalSearchParams<{ matchId: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
 
   const { data: matchRows } = useLiveQuery(db.select().from(matches).where(eq(matches.id, matchId)));
@@ -86,7 +87,8 @@ export default function MatchSummaryScreen() {
         <YStack gap="$1">
           <H2>{t("matches.vs", { opponent: match.opponentName })}</H2>
           <Text color="$color10">
-            {match.matchDate} · {t(match.format === "best_of_5" ? "matches.bestOf5" : "matches.bestOf3")}
+            {formatMatchDateTime(match.matchDate, i18n.language)} ·{" "}
+            {t(match.format === "best_of_5" ? "matches.bestOf5" : "matches.bestOf3")}
           </Text>
         </YStack>
 

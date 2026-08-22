@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Input, Label, ScrollView, Text, XStack, YStack } from "tamagui";
 
+import { SelectableChip } from "@/src/components/shared/SelectableChip";
 import { db } from "@/src/db/client";
 import { players, teams } from "@/src/db/schema";
 import type { MatchFormat } from "@/src/domain/scoring";
@@ -59,7 +60,7 @@ export default function NewMatchScreen() {
       const match = await matchRepository.create({
         teamId: selectedTeamId,
         opponentName: opponentName.trim(),
-        matchDate: new Date().toISOString().slice(0, 10),
+        matchDate: new Date().toISOString(),
         location: null,
         format,
         notes: null,
@@ -83,14 +84,14 @@ export default function NewMatchScreen() {
           ) : (
             <XStack flexWrap="wrap" gap="$2">
               {teamRows.map((team) => (
-                <Button
+                <SelectableChip
                   key={team.id}
                   size="$3"
-                  theme={team.id === selectedTeamId ? "active" : undefined}
+                  selected={team.id === selectedTeamId}
                   onPress={() => setExplicitTeamId(team.id)}
                 >
                   {team.name}
-                </Button>
+                </SelectableChip>
               ))}
             </XStack>
           )}
@@ -113,20 +114,20 @@ export default function NewMatchScreen() {
         <YStack gap="$2">
           <Label>{t("matches.format")}</Label>
           <XStack gap="$2">
-            <Button
+            <SelectableChip
               flex={1}
-              theme={format === "best_of_3" ? "active" : undefined}
+              selected={format === "best_of_3"}
               onPress={() => setFormat("best_of_3")}
             >
               {t("matches.bestOf3")}
-            </Button>
-            <Button
+            </SelectableChip>
+            <SelectableChip
               flex={1}
-              theme={format === "best_of_5" ? "active" : undefined}
+              selected={format === "best_of_5"}
               onPress={() => setFormat("best_of_5")}
             >
               {t("matches.bestOf5")}
-            </Button>
+            </SelectableChip>
           </XStack>
         </YStack>
 

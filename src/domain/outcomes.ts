@@ -30,6 +30,24 @@ export const PLAYER_POSITIONS = [
 
 export type PlayerPosition = (typeof PLAYER_POSITIONS)[number];
 
+const PLAYER_POSITION_SET = new Set<string>(PLAYER_POSITIONS);
+
+function isPlayerPosition(value: string): value is PlayerPosition {
+  return PLAYER_POSITION_SET.has(value);
+}
+
+/** A player can play more than one position — stored as a comma-separated list in the `positions` column. */
+export function parsePositions(value: string): PlayerPosition[] {
+  return value
+    .split(",")
+    .map((code) => code.trim())
+    .filter(isPlayerPosition);
+}
+
+export function serializePositions(positions: readonly PlayerPosition[]): string {
+  return positions.join(",");
+}
+
 interface OutcomeDefinition {
   code: string;
   pointImpact: PointImpact;

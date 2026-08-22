@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { Button, Label, ScrollView, Text, XStack, YStack } from 'tamagui';
+import { Label, ScrollView, Text, XStack, YStack } from 'tamagui';
 
+import { SelectableChip } from '@/src/components/shared/SelectableChip';
 import {
   useSettingsStore,
   type LanguagePreference,
@@ -36,14 +37,14 @@ export default function SettingsScreen() {
           <Label>{t('settings.appearance')}</Label>
           <XStack gap="$2">
             {THEME_OPTIONS.map((option) => (
-              <Button
+              <SelectableChip
                 key={option}
                 flex={1}
-                theme={option === themePreference ? 'active' : undefined}
+                selected={option === themePreference}
                 onPress={() => setThemePreference(option)}
               >
                 {t(THEME_LABEL_KEY[option])}
-              </Button>
+              </SelectableChip>
             ))}
           </XStack>
         </YStack>
@@ -52,14 +53,14 @@ export default function SettingsScreen() {
           <Label>{t('settings.language')}</Label>
           <XStack gap="$2">
             {LANGUAGE_OPTIONS.map((option) => (
-              <Button
+              <SelectableChip
                 key={option}
                 flex={1}
-                theme={option === languagePreference ? 'active' : undefined}
+                selected={option === languagePreference}
                 onPress={() => setLanguagePreference(option)}
               >
                 {t(LANGUAGE_LABEL_KEY[option])}
-              </Button>
+              </SelectableChip>
             ))}
           </XStack>
         </YStack>

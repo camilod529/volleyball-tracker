@@ -7,6 +7,7 @@ import { ScrollView, Spinner, YStack } from "tamagui";
 import { PlayerForm, type PlayerFormValues } from "@/src/components/roster/PlayerForm";
 import { db } from "@/src/db/client";
 import { players } from "@/src/db/schema";
+import { parsePositions, serializePositions } from "@/src/domain/outcomes";
 import { playerRepository } from "@/src/repositories";
 
 export default function EditPlayerScreen() {
@@ -18,7 +19,8 @@ export default function EditPlayerScreen() {
   const player = rows[0];
 
   async function handleSubmit(values: PlayerFormValues) {
-    await playerRepository.update(playerId, values);
+    const { positions, ...rest } = values;
+    await playerRepository.update(playerId, { ...rest, positions: serializePositions(positions) });
     router.back();
   }
 
@@ -30,7 +32,7 @@ export default function EditPlayerScreen() {
           initialValues={{
             name: player.name,
             number: player.number,
-            position: player.position as PlayerFormValues["position"],
+            positions: parsePositions(player.positions),
             isActive: player.isActive,
           }}
           submitLabel={t("common.save")}

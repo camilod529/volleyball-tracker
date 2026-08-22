@@ -1,63 +1,38 @@
 import { useTranslation } from "react-i18next";
-import { Button, Text, XStack, YStack } from "tamagui";
+import { Text, XStack, YStack } from "tamagui";
 
+import { SelectableChip } from "@/src/components/shared/SelectableChip";
 import type { Player } from "@/src/db/schema";
-import { PLAYER_POSITIONS } from "@/src/domain/outcomes";
 
 interface PlayerGridProps {
+  /** Rendered in the order given — callers should pass a stable, sortOrder-based query so the grid never reshuffles mid-game. Reordering (e.g. starters first) is done from the roster screen, not derived here. */
   players: Player[];
   recentPlayerId: string | null;
   onSelect: (playerId: string) => void;
-  /** Renders players in per-position sections instead of pinning the recent player first. Used by the tablet-portrait layout, which has room for a grouped roster view. */
-  groupByPosition?: boolean;
+  /** How many buttons per row — every button gets the same fixed size regardless of how many end up in the last row. Defaults to 3 (comfortable on a phone-width column). */
+  columns?: number;
 }
 
-export function PlayerGrid({ players, recentPlayerId, onSelect, groupByPosition }: PlayerGridProps) {
+// Small buffer subtracted from the even split so `columns` buttons plus the
+// gaps between them never wrap early inside their row.
+function columnBasis(columns: number): `${number}%` {
+  return `${100 / columns - 3}%`;
+}
+
+export function PlayerGrid({ players, recentPlayerId, onSelect, columns = 3 }: PlayerGridProps) {
   const { t } = useTranslation();
-
-  if (groupByPosition) {
-    const groups = PLAYER_POSITIONS.map((position) => ({
-      position,
-      players: players.filter((p) => p.position === position),
-    })).filter((group) => group.players.length > 0);
-
-    return (
-      <YStack gap="$4" padding="$3" flex={1}>
-        <Text color="$color10">{t("recording.selectPlayer")}</Text>
-        {groups.map((group) => (
-          <YStack key={group.position} gap="$2">
-            <Text fontSize="$2" color="$color10">
-              {t(`positions.${group.position}`)}
-            </Text>
-            <XStack flexWrap="wrap" gap="$2">
-              {group.players.map((player) => (
-                <PlayerButton
-                  key={player.id}
-                  player={player}
-                  isRecent={player.id === recentPlayerId}
-                  onSelect={onSelect}
-                />
-              ))}
-            </XStack>
-          </YStack>
-        ))}
-      </YStack>
-    );
-  }
-
-  const recentPlayer = players.find((p) => p.id === recentPlayerId);
-  const rest = players.filter((p) => p.id !== recentPlayerId);
-  const ordered = recentPlayer ? [recentPlayer, ...rest] : players;
+  const basis = columnBasis(columns);
 
   return (
     <YStack gap="$3" padding="$3" flex={1}>
       <Text color="$color10">{t("recording.selectPlayer")}</Text>
       <XStack flexWrap="wrap" gap="$2">
-        {ordered.map((player) => (
+        {players.map((player) => (
           <PlayerButton
             key={player.id}
             player={player}
             isRecent={player.id === recentPlayerId}
+            basis={basis}
             onSelect={onSelect}
           />
         ))}
@@ -69,20 +44,23 @@ export function PlayerGrid({ players, recentPlayerId, onSelect, groupByPosition 
 function PlayerButton({
   player,
   isRecent,
+  basis,
   onSelect,
 }: {
   player: Player;
   isRecent: boolean;
+  basis: `${number}%`;
   onSelect: (playerId: string) => void;
 }) {
   const { t } = useTranslation();
 
   return (
-    <Button
+    <SelectableChip
       size="$5"
-      minWidth="30%"
-      flexGrow={1}
-      theme={isRecent ? "active" : undefined}
+      flexBasis={basis}
+      flexGrow={0}
+      flexShrink={0}
+      selected={isRecent}
       onPress={() => onSelect(player.id)}
     >
       <YStack alignItems="center">
@@ -96,6 +74,6 @@ function PlayerButton({
           </Text>
         ) : null}
       </YStack>
-    </Button>
+    </SelectableChip>
   );
 }

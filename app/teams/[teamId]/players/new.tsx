@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { ScrollView } from "tamagui";
 
 import { PlayerForm, type PlayerFormValues } from "@/src/components/roster/PlayerForm";
+import { serializePositions } from "@/src/domain/outcomes";
 import { playerRepository } from "@/src/repositories";
 
 export default function NewPlayerScreen() {
@@ -11,7 +12,8 @@ export default function NewPlayerScreen() {
   const router = useRouter();
 
   async function handleSubmit(values: PlayerFormValues) {
-    await playerRepository.create({ teamId, ...values });
+    const { positions, ...rest } = values;
+    await playerRepository.create({ teamId, ...rest, positions: serializePositions(positions) });
     router.back();
   }
 

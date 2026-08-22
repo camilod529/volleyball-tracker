@@ -8,6 +8,13 @@
       "when": 1787411521106,
       "tag": "0000_rapid_inhumans",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1787670000000,
+      "tag": "0001_add_player_positions_and_sort_order",
+      "breakpoints": true
     }
   ]
 }

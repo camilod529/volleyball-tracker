@@ -1,13 +1,14 @@
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Alert, Pressable } from "react-native";
-import { Button, ListItem, Separator, Text, XStack, YStack } from "tamagui";
+import { Button, ListItem, ScrollView, Separator, Text, XStack, YStack } from "tamagui";
 import { Ionicons } from "@expo/vector-icons";
 
 import { db } from "@/src/db/client";
 import { players, teams } from "@/src/db/schema";
+import { parsePositions } from "@/src/domain/outcomes";
 import { playerRepository } from "@/src/repositories";
 
 export default function RosterScreen() {
@@ -19,10 +20,10 @@ export default function RosterScreen() {
   const team = teamRows[0];
 
   const { data: playerRows } = useLiveQuery(
-    db.select().from(players).where(eq(players.teamId, teamId))
+    db.select().from(players).where(eq(players.teamId, teamId)).orderBy(asc(players.sortOrder))
   );
-  const activePlayers = playerRows.filter((p) => !p.isDeleted);
-  const hasActiveRosterPlayers = activePlayers.some((p) => p.isActive);
+  const roster = playerRows.filter((p) => !p.isDeleted);
+  const hasActiveRosterPlayers = roster.some((p) => p.isActive);
 
   function confirmDeletePlayer(playerId: string, name: string) {
     Alert.alert(t("players.deleteConfirmTitle"), t("players.deleteConfirmMessage", { name }), [
@@ -33,6 +34,15 @@ export default function RosterScreen() {
         onPress: () => playerRepository.softDelete(playerId),
       },
     ]);
+  }
+
+  async function movePlayer(index: number, direction: -1 | 1) {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= roster.length) return;
+    const current = roster[index];
+    const target = roster[targetIndex];
+    await playerRepository.update(current.id, { sortOrder: target.sortOrder });
+    await playerRepository.update(target.id, { sortOrder: current.sortOrder });
   }
 
   return (
@@ -71,39 +81,61 @@ export default function RosterScreen() {
         </Button>
       </XStack>
 
-      {activePlayers.length === 0 ? (
+      {roster.length === 0 ? (
         <YStack flex={1} alignItems="center" justifyContent="center">
           <Text color="$color10">{t("players.noPlayers")}</Text>
         </YStack>
       ) : (
-        <YStack borderRadius="$4" overflow="hidden">
-          {activePlayers.map((player, index) => (
-            <YStack key={player.id}>
-              {index > 0 ? <Separator /> : null}
-              <ListItem
-                title={player.number != null ? `#${player.number} ${player.name}` : player.name}
-                subTitle={`${t(`positions.${player.position}`)}${
-                  player.isActive ? "" : ` · ${t("players.inactive")}`
-                }`}
-                onPress={() =>
-                  router.push({
-                    pathname: "/teams/[teamId]/players/[playerId]/edit",
-                    params: { teamId, playerId: player.id },
-                  })
-                }
-                iconAfter={
-                  <Button
-                    size="$2"
-                    circular
-                    chromeless
-                    icon={<Ionicons name="trash-outline" size={18} />}
-                    onPress={() => confirmDeletePlayer(player.id, player.name)}
-                  />
-                }
-              />
-            </YStack>
-          ))}
-        </YStack>
+        <ScrollView flex={1}>
+          <YStack borderRadius="$4" overflow="hidden">
+            {roster.map((player, index) => (
+              <YStack key={player.id}>
+                {index > 0 ? <Separator /> : null}
+                <ListItem
+                  title={player.number != null ? `#${player.number} ${player.name}` : player.name}
+                  subTitle={`${parsePositions(player.positions)
+                    .map((position) => t(`positions.${position}`))
+                    .join(", ")}${player.isActive ? "" : ` · ${t("players.inactive")}`}`}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/teams/[teamId]/players/[playerId]/edit",
+                      params: { teamId, playerId: player.id },
+                    })
+                  }
+                  iconAfter={
+                    <XStack gap="$1" alignItems="center">
+                      <Button
+                        size="$2"
+                        circular
+                        chromeless
+                        disabled={index === 0}
+                        opacity={index === 0 ? 0.3 : 1}
+                        icon={<Ionicons name="chevron-up" size={16} />}
+                        onPress={() => movePlayer(index, -1)}
+                      />
+                      <Button
+                        size="$2"
+                        circular
+                        chromeless
+                        disabled={index === roster.length - 1}
+                        opacity={index === roster.length - 1 ? 0.3 : 1}
+                        icon={<Ionicons name="chevron-down" size={16} />}
+                        onPress={() => movePlayer(index, 1)}
+                      />
+                      <Button
+                        size="$2"
+                        circular
+                        chromeless
+                        icon={<Ionicons name="trash-outline" size={18} />}
+                        onPress={() => confirmDeletePlayer(player.id, player.name)}
+                      />
+                    </XStack>
+                  }
+                />
+              </YStack>
+            ))}
+          </YStack>
+        </ScrollView>
       )}
     </YStack>
   );

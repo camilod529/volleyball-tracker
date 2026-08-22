@@ -22,7 +22,7 @@ describe("recalculationService", () => {
       teamId: team.id,
       name: "Camila",
       number: 7,
-      position: "outside_hitter",
+      positions: "outside_hitter",
       isActive: true,
     });
     const match = await matchRepository.create({

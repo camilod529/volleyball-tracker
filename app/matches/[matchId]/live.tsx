@@ -58,13 +58,18 @@ export default function LiveRecordingScreen() {
           eq(players.isActive, true),
           eq(players.isDeleted, false)
         )
-      ),
+      )
+      .orderBy(asc(players.sortOrder)),
     [match?.teamId]
   );
 
   // Includes inactive players too, so past events referencing a since-deactivated player still display/edit correctly.
   const { data: allTeamPlayers } = useLiveQuery(
-    db.select().from(players).where(eq(players.teamId, match?.teamId ?? "")),
+    db
+      .select()
+      .from(players)
+      .where(eq(players.teamId, match?.teamId ?? ""))
+      .orderBy(asc(players.sortOrder)),
     [match?.teamId]
   );
 
@@ -242,6 +247,7 @@ export default function LiveRecordingScreen() {
         onPlusUs={handlePlusUs}
         onPlusOpponent={handlePlusOpponent}
         onOpenHistory={layoutKind === "tablet-landscape" ? undefined : () => setHistorySheetOpen(true)}
+        setDecided={Boolean(setWinner)}
       />
 
       {setWinner ? (
@@ -316,11 +322,14 @@ function RecordingLayout({
   ...props
 }: RecordingLayoutProps & { kind: RecordingLayoutKind; recentEventsColumn?: ReactNode }) {
   switch (kind) {
-    case "phone-landscape":
     case "tablet-landscape":
       return <ThreeColumnLayout {...props} recentEventsColumn={recentEventsColumn} />;
     case "tablet-portrait":
       return <TwoColumnLayout {...props} />;
+    // Phone landscape doesn't have enough width per column for 3 side by
+    // side (confirmed on a real device) — falls back to the same
+    // accordion as phone portrait instead of ThreeColumnLayout.
+    case "phone-landscape":
     case "phone-portrait":
     default:
       return <StackedAccordionLayout {...props} />;

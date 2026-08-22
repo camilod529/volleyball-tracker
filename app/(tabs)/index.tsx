@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert } from "react-native";
 import { useTranslation } from "react-i18next";
-import { Button, Dialog, Input, ListItem, Separator, Text, XStack, YStack } from "tamagui";
+import { Button, Dialog, Input, ListItem, ScrollView, Separator, Text, XStack, YStack } from "tamagui";
 import { Ionicons } from "@expo/vector-icons";
 
 import { db } from "@/src/db/client";
@@ -109,53 +109,55 @@ export default function TeamsScreen() {
           <Text color="$color10">{t("teams.noTeams")}</Text>
         </YStack>
       ) : (
-        <YStack borderRadius="$4" overflow="hidden">
-          {teamRows.map((team, index) => (
-            <YStack key={team.id}>
-              {index > 0 ? <Separator /> : null}
-              <ListItem
-                title={team.name}
-                subTitle={team.id === activeTeamId ? t("teams.active") : undefined}
-                onPress={() =>
-                  router.push({ pathname: "/teams/[teamId]", params: { teamId: team.id } })
-                }
-                icon={
-                  <Button
-                    size="$2"
-                    circular
-                    chromeless
-                    icon={
-                      <Ionicons
-                        name={team.id === activeTeamId ? "checkmark-circle" : "ellipse-outline"}
-                        size={22}
-                        color={team.id === activeTeamId ? "#22c55e" : "#999"}
+        <ScrollView flex={1}>
+          <YStack borderRadius="$4" overflow="hidden">
+            {teamRows.map((team, index) => (
+              <YStack key={team.id}>
+                {index > 0 ? <Separator /> : null}
+                <ListItem
+                  title={team.name}
+                  subTitle={team.id === activeTeamId ? t("teams.active") : undefined}
+                  onPress={() =>
+                    router.push({ pathname: "/teams/[teamId]", params: { teamId: team.id } })
+                  }
+                  icon={
+                    <Button
+                      size="$2"
+                      circular
+                      chromeless
+                      icon={
+                        <Ionicons
+                          name={team.id === activeTeamId ? "checkmark-circle" : "ellipse-outline"}
+                          size={22}
+                          color={team.id === activeTeamId ? "#22c55e" : "#999"}
+                        />
+                      }
+                      onPress={() => setActiveTeamId(team.id)}
+                    />
+                  }
+                  iconAfter={
+                    <XStack gap="$1">
+                      <Button
+                        size="$2"
+                        circular
+                        chromeless
+                        icon={<Ionicons name="pencil-outline" size={18} />}
+                        onPress={() => openEditDialog(team)}
                       />
-                    }
-                    onPress={() => setActiveTeamId(team.id)}
-                  />
-                }
-                iconAfter={
-                  <XStack gap="$1">
-                    <Button
-                      size="$2"
-                      circular
-                      chromeless
-                      icon={<Ionicons name="pencil-outline" size={18} />}
-                      onPress={() => openEditDialog(team)}
-                    />
-                    <Button
-                      size="$2"
-                      circular
-                      chromeless
-                      icon={<Ionicons name="trash-outline" size={18} />}
-                      onPress={() => confirmDeleteTeam(team.id, team.name)}
-                    />
-                  </XStack>
-                }
-              />
-            </YStack>
-          ))}
-        </YStack>
+                      <Button
+                        size="$2"
+                        circular
+                        chromeless
+                        icon={<Ionicons name="trash-outline" size={18} />}
+                        onPress={() => confirmDeleteTeam(team.id, team.name)}
+                      />
+                    </XStack>
+                  }
+                />
+              </YStack>
+            ))}
+          </YStack>
+        </ScrollView>
       )}
     </YStack>
   );

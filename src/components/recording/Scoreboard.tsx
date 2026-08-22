@@ -13,6 +13,8 @@ interface ScoreboardProps {
   onPlusOpponent: () => void;
   /** Omit to hide the History button (e.g. tablet landscape, where Recent Events is an always-visible column instead). */
   onOpenHistory?: () => void;
+  /** True once the set has a winner — the score is locked pending finalization, so +1/-1 adjustments are blocked (Undo Last stays available to fix a wrong call). */
+  setDecided?: boolean;
 }
 
 export function Scoreboard({
@@ -25,6 +27,7 @@ export function Scoreboard({
   onPlusUs,
   onPlusOpponent,
   onOpenHistory,
+  setDecided,
 }: ScoreboardProps) {
   const { t } = useTranslation();
 
@@ -71,10 +74,10 @@ export function Scoreboard({
       </XStack>
 
       <XStack justifyContent="center" gap="$3">
-        <Button size="$3" onPress={onPlusUs}>
+        <Button size="$3" disabled={setDecided} opacity={setDecided ? 0.4 : 1} onPress={onPlusUs}>
           {t("recording.plusUs")}
         </Button>
-        <Button size="$3" onPress={onPlusOpponent}>
+        <Button size="$3" disabled={setDecided} opacity={setDecided ? 0.4 : 1} onPress={onPlusOpponent}>
           {t("recording.plusOpponent")}
         </Button>
       </XStack>

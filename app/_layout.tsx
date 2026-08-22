@@ -63,7 +63,7 @@ function RootLayoutNav() {
       <PortalProvider shouldAddRootHost>
         <ThemeProvider value={effectiveColorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <MigrationGate>
-            <Stack>
+            <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal' }}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             </Stack>
           </MigrationGate>

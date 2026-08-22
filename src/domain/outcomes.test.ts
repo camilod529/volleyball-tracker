@@ -1,4 +1,11 @@
-import { ACTION_OUTCOMES, ACTION_TYPES, getPointImpact, isValidOutcome } from "./outcomes";
+import {
+  ACTION_OUTCOMES,
+  ACTION_TYPES,
+  getPointImpact,
+  isValidOutcome,
+  parsePositions,
+  serializePositions,
+} from "./outcomes";
 
 describe("outcomes taxonomy", () => {
   it("maps every outcome in every action type to exactly one valid point-impact class", () => {
@@ -35,5 +42,29 @@ describe("outcomes taxonomy", () => {
   it("gives team_point_adjustment exactly the two manual outcomes", () => {
     const codes = ACTION_OUTCOMES.team_point_adjustment.map((o) => o.code).sort();
     expect(codes).toEqual(["manual_plus_opponent", "manual_plus_us"]);
+  });
+});
+
+describe("parsePositions / serializePositions", () => {
+  it("round-trips a single position (a bare RENAME COLUMN result, no commas)", () => {
+    expect(parsePositions("setter")).toEqual(["setter"]);
+    expect(serializePositions(["setter"])).toBe("setter");
+  });
+
+  it("round-trips multiple positions for one player", () => {
+    expect(parsePositions("setter,opposite")).toEqual(["setter", "opposite"]);
+    expect(serializePositions(["setter", "opposite"])).toBe("setter,opposite");
+  });
+
+  it("trims whitespace around each code", () => {
+    expect(parsePositions("setter, opposite ,  libero")).toEqual(["setter", "opposite", "libero"]);
+  });
+
+  it("drops unknown/invalid codes rather than throwing (defensive against bad data)", () => {
+    expect(parsePositions("setter,not_a_real_position")).toEqual(["setter"]);
+  });
+
+  it("returns an empty array for an empty string", () => {
+    expect(parsePositions("")).toEqual([]);
   });
 });
