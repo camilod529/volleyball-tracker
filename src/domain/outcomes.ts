@@ -11,6 +11,11 @@ export const ACTION_TYPES = [
 
 export type ActionType = (typeof ACTION_TYPES)[number];
 
+/** ACTION_TYPES minus the manual scoreboard adjustment, which lives outside the tap-a-player flow. */
+export const RECORDABLE_ACTION_TYPES = ACTION_TYPES.filter(
+  (actionType) => actionType !== "team_point_adjustment"
+);
+
 export type PointImpact = "our_point" | "opponent_point" | "neutral";
 
 export const PLAYER_POSITIONS = [
@@ -123,4 +128,12 @@ export function getPointImpact(actionType: ActionType, outcomeCode: string): Poi
 
 export function isValidOutcome(actionType: ActionType, outcomeCode: string): boolean {
   return ACTION_OUTCOMES[actionType].some((o) => o.code === outcomeCode);
+}
+
+export function getOutcomeLabelKey(actionType: ActionType, outcomeCode: string): string {
+  const outcome = ACTION_OUTCOMES[actionType].find((o) => o.code === outcomeCode);
+  if (!outcome) {
+    throw new Error(`Unknown outcome "${outcomeCode}" for action type "${actionType}"`);
+  }
+  return outcome.labelKey;
 }

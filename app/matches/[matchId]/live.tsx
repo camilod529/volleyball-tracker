@@ -1,10 +1,14 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import * as Haptics from "expo-haptics";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { Spinner, YStack } from "tamagui";
+import { useEffect, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import { Alert } from "react-native";
+import { Sheet, Spinner, YStack } from "tamagui";
 
+import { EditEventDialog, type EventEditResult } from "@/src/components/recording/EditEventDialog";
+import { RecentEventsPanel } from "@/src/components/recording/RecentEventsPanel";
 import { Scoreboard } from "@/src/components/recording/Scoreboard";
 import { SetCompletePanel } from "@/src/components/recording/SetCompletePanel";
 import { StackedAccordionLayout } from "@/src/components/recording/layouts/StackedAccordionLayout";
@@ -12,7 +16,7 @@ import { ThreeColumnLayout } from "@/src/components/recording/layouts/ThreeColum
 import type { RecordingLayoutProps } from "@/src/components/recording/layouts/types";
 import { TwoColumnLayout } from "@/src/components/recording/layouts/TwoColumnLayout";
 import { db } from "@/src/db/client";
-import { actionEvents, matches, players, sets } from "@/src/db/schema";
+import { actionEvents, matches, players, sets, type ActionEvent } from "@/src/db/schema";
 import {
   DECIDING_SET,
   getMatchWinner,
@@ -21,14 +25,22 @@ import {
   STANDARD_SET,
 } from "@/src/domain/scoring";
 import { useResponsiveLayout, type RecordingLayoutKind } from "@/src/hooks/useResponsiveLayout";
-import { actionEventRepository, matchRepository, setRepository } from "@/src/repositories";
+import {
+  actionEventRepository,
+  matchRepository,
+  recalculationService,
+  setRepository,
+} from "@/src/repositories";
 import { useMatchSessionStore } from "@/src/state/matchSessionStore";
 
 export default function LiveRecordingScreen() {
   const { matchId } = useLocalSearchParams<{ matchId: string }>();
+  const { t } = useTranslation();
   const router = useRouter();
   const layoutKind = useResponsiveLayout();
   const [finalizing, setFinalizing] = useState(false);
+  const [historySheetOpen, setHistorySheetOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<ActionEvent | null>(null);
 
   const { data: matchRows } = useLiveQuery(db.select().from(matches).where(eq(matches.id, matchId)));
   const match = matchRows[0];
@@ -50,6 +62,12 @@ export default function LiveRecordingScreen() {
     [match?.teamId]
   );
 
+  // Includes inactive players too, so past events referencing a since-deactivated player still display/edit correctly.
+  const { data: allTeamPlayers } = useLiveQuery(
+    db.select().from(players).where(eq(players.teamId, match?.teamId ?? "")),
+    [match?.teamId]
+  );
+
   const { data: events } = useLiveQuery(
     db
       .select()
@@ -57,6 +75,16 @@ export default function LiveRecordingScreen() {
       .where(and(eq(actionEvents.setId, currentSet?.id ?? ""), eq(actionEvents.isDeleted, false)))
       .orderBy(asc(actionEvents.sequenceInSet)),
     [currentSet?.id]
+  );
+
+  // Across the whole match (not just the current set) so a mistake in a
+  // set that was just finalized is still reachable from Recent Events.
+  const { data: recentMatchEvents } = useLiveQuery(
+    db
+      .select()
+      .from(actionEvents)
+      .where(and(eq(actionEvents.matchId, matchId), eq(actionEvents.isDeleted, false)))
+      .orderBy(desc(actionEvents.occurredAt))
   );
 
   const selectedPlayerId = useMatchSessionStore((s) => s.selectedPlayerId);
@@ -141,6 +169,40 @@ export default function LiveRecordingScreen() {
     await actionEventRepository.softDelete(lastEvent.id);
   }
 
+  function isEventInCompletedSet(event: ActionEvent) {
+    return allSets.find((s) => s.id === event.setId)?.status === "completed";
+  }
+
+  function handleSelectEventForEdit(event: ActionEvent) {
+    if (isEventInCompletedSet(event)) {
+      Alert.alert(t("recording.editConfirmCompletedSetTitle"), t("recording.editConfirmCompletedSetMessage"), [
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("common.confirm"), onPress: () => setEditingEvent(event) },
+      ]);
+      return;
+    }
+    setEditingEvent(event);
+  }
+
+  async function handleSaveEditedEvent(eventId: string, changes: EventEditResult) {
+    await recalculationService.editEvent(eventId, changes);
+    setEditingEvent(null);
+  }
+
+  function handleDeleteEditedEvent(eventId: string) {
+    Alert.alert(t("recording.deleteEventConfirmTitle"), t("recording.deleteEventConfirmMessage"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("common.delete"),
+        style: "destructive",
+        onPress: async () => {
+          await recalculationService.deleteEvent(eventId);
+          setEditingEvent(null);
+        },
+      },
+    ]);
+  }
+
   async function handleFinalizeSet() {
     if (!setWinner) return;
     setFinalizing(true);
@@ -149,6 +211,8 @@ export default function LiveRecordingScreen() {
         status: "completed",
         winner: setWinner,
         endedAt: new Date().toISOString(),
+        ourScore,
+        opponentScore,
       });
       if (wouldCompleteMatch) {
         await matchRepository.update(matchId, { status: "completed" });
@@ -174,6 +238,7 @@ export default function LiveRecordingScreen() {
         onUndoLast={handleUndoLast}
         onPlusUs={handlePlusUs}
         onPlusOpponent={handlePlusOpponent}
+        onOpenHistory={layoutKind === "tablet-landscape" ? undefined : () => setHistorySheetOpen(true)}
       />
 
       {setWinner ? (
@@ -198,20 +263,59 @@ export default function LiveRecordingScreen() {
           onSelectOutcome={handleSelectOutcome}
           onResetPlayer={resetSelection}
           onClearAction={clearAction}
+          recentEventsColumn={
+            layoutKind === "tablet-landscape" ? (
+              <RecentEventsPanel
+                events={recentMatchEvents}
+                players={allTeamPlayers}
+                onSelectEvent={handleSelectEventForEdit}
+              />
+            ) : undefined
+          }
         />
       )}
+
+      <Sheet
+        modal
+        open={historySheetOpen}
+        onOpenChange={setHistorySheetOpen}
+        snapPoints={[75]}
+        dismissOnSnapToBottom
+      >
+        <Sheet.Overlay key="overlay" opacity={0.5} enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
+        <Sheet.Handle />
+        <Sheet.Frame>
+          <RecentEventsPanel
+            events={recentMatchEvents}
+            players={allTeamPlayers}
+            onSelectEvent={(event) => {
+              setHistorySheetOpen(false);
+              handleSelectEventForEdit(event);
+            }}
+          />
+        </Sheet.Frame>
+      </Sheet>
+
+      <EditEventDialog
+        event={editingEvent}
+        players={allTeamPlayers}
+        onClose={() => setEditingEvent(null)}
+        onSave={handleSaveEditedEvent}
+        onDelete={handleDeleteEditedEvent}
+      />
     </YStack>
   );
 }
 
 function RecordingLayout({
   kind,
+  recentEventsColumn,
   ...props
-}: RecordingLayoutProps & { kind: RecordingLayoutKind }) {
+}: RecordingLayoutProps & { kind: RecordingLayoutKind; recentEventsColumn?: ReactNode }) {
   switch (kind) {
     case "phone-landscape":
     case "tablet-landscape":
-      return <ThreeColumnLayout {...props} />;
+      return <ThreeColumnLayout {...props} recentEventsColumn={recentEventsColumn} />;
     case "tablet-portrait":
       return <TwoColumnLayout {...props} />;
     case "phone-portrait":

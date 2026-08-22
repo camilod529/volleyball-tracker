@@ -1,11 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Button, Text, XStack, YStack } from "tamagui";
 
-import { ACTION_TYPES, type ActionType } from "@/src/domain/outcomes";
-
-const RECORDABLE_ACTION_TYPES = ACTION_TYPES.filter(
-  (actionType) => actionType !== "team_point_adjustment"
-);
+import { RECORDABLE_ACTION_TYPES, type ActionType } from "@/src/domain/outcomes";
 
 interface ActionTypeRowProps {
   onSelect: (actionType: ActionType) => void;

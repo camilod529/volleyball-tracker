@@ -3,16 +3,12 @@ import { Button, Text, XStack, YStack } from "tamagui";
 
 import { ACTION_OUTCOMES, type ActionType } from "@/src/domain/outcomes";
 
+import { IMPACT_COLOR } from "./impactColors";
+
 interface OutcomePickerProps {
   actionType: ActionType;
   onSelect: (outcomeCode: string) => void;
 }
-
-const IMPACT_COLOR: Record<string, string> = {
-  our_point: "$green8",
-  opponent_point: "$red8",
-  neutral: "$gray5",
-};
 
 export function OutcomePicker({ actionType, onSelect }: OutcomePickerProps) {
   const { t } = useTranslation();

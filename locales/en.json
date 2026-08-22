@@ -141,6 +141,15 @@
     "weWonSet": "You won this set",
     "theyWonSet": "Opponent won this set",
     "startNextSet": "Start Set {{number}}",
-    "goToSummary": "Match Complete — View Summary"
+    "goToSummary": "Match Complete — View Summary",
+    "history": "History",
+    "recentEvents": "Recent Events",
+    "noEvents": "No events logged yet.",
+    "editEvent": "Edit Event",
+    "editConfirmCompletedSetTitle": "Edit a finished set?",
+    "editConfirmCompletedSetMessage": "This set is already finished. Changing this event could change how the set ended.",
+    "deleteConfirmCompletedSetMessage": "This set is already finished. Deleting this event could change how the set ended.",
+    "deleteEventConfirmTitle": "Delete this event?",
+    "deleteEventConfirmMessage": "Scores after it will be recalculated."
   }
 }

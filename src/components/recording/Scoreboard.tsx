@@ -11,6 +11,8 @@ interface ScoreboardProps {
   onUndoLast: () => void;
   onPlusUs: () => void;
   onPlusOpponent: () => void;
+  /** Omit to hide the History button (e.g. tablet landscape, where Recent Events is an always-visible column instead). */
+  onOpenHistory?: () => void;
 }
 
 export function Scoreboard({
@@ -22,13 +24,26 @@ export function Scoreboard({
   onUndoLast,
   onPlusUs,
   onPlusOpponent,
+  onOpenHistory,
 }: ScoreboardProps) {
   const { t } = useTranslation();
 
   return (
     <YStack padding="$3" gap="$2" borderBottomWidth={1} borderBottomColor="$borderColor">
       <XStack justifyContent="space-between" alignItems="center">
-        <Text color="$color10">{t("recording.set", { number: setNumber })}</Text>
+        <XStack alignItems="center" gap="$2">
+          <Text color="$color10">{t("recording.set", { number: setNumber })}</Text>
+          {onOpenHistory ? (
+            <Button
+              size="$2"
+              chromeless
+              icon={<Ionicons name="time-outline" size={16} />}
+              onPress={onOpenHistory}
+            >
+              {t("recording.history")}
+            </Button>
+          ) : null}
+        </XStack>
         <Button
           size="$2"
           chromeless

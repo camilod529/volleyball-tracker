@@ -141,6 +141,15 @@
     "weWonSet": "Ganaron este set",
     "theyWonSet": "El rival ganó este set",
     "startNextSet": "Iniciar set {{number}}",
-    "goToSummary": "Partido finalizado — Ver resumen"
+    "goToSummary": "Partido finalizado — Ver resumen",
+    "history": "Historial",
+    "recentEvents": "Jugadas recientes",
+    "noEvents": "Aún no hay jugadas registradas.",
+    "editEvent": "Editar jugada",
+    "editConfirmCompletedSetTitle": "¿Editar un set finalizado?",
+    "editConfirmCompletedSetMessage": "Este set ya finalizó. Cambiar esta jugada podría cambiar cómo terminó el set.",
+    "deleteConfirmCompletedSetMessage": "Este set ya finalizó. Eliminar esta jugada podría cambiar cómo terminó el set.",
+    "deleteEventConfirmTitle": "¿Eliminar esta jugada?",
+    "deleteEventConfirmMessage": "Los puntajes posteriores se recalcularán."
   }
 }

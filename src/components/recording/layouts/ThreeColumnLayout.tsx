@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, XStack, YStack } from "tamagui";
 
@@ -6,6 +7,11 @@ import { OutcomePicker } from "@/src/components/recording/OutcomePicker";
 import { PlayerGrid } from "@/src/components/recording/PlayerGrid";
 
 import type { RecordingLayoutProps } from "./types";
+
+interface ThreeColumnLayoutProps extends RecordingLayoutProps {
+  /** Tablet landscape's 4th column (Recent Events) — omit on phone landscape, which doesn't have room for it. */
+  recentEventsColumn?: ReactNode;
+}
 
 /** Phone/tablet landscape: players, actions, and outcomes all visible at once — width allows it, so no accordion collapsing is needed. */
 export function ThreeColumnLayout({
@@ -16,7 +22,8 @@ export function ThreeColumnLayout({
   onSelectPlayer,
   onSelectAction,
   onSelectOutcome,
-}: RecordingLayoutProps) {
+  recentEventsColumn,
+}: ThreeColumnLayoutProps) {
   const { t } = useTranslation();
 
   return (
@@ -33,13 +40,17 @@ export function ThreeColumnLayout({
         )}
       </YStack>
 
-      <YStack flex={1}>
+      <YStack flex={1} borderRightWidth={recentEventsColumn ? 1 : 0} borderColor="$borderColor">
         {selectedPlayer && selectedActionType ? (
           <OutcomePicker actionType={selectedActionType} onSelect={onSelectOutcome} />
         ) : (
           <ColumnPlaceholder text={t("recording.selectAction")} />
         )}
       </YStack>
+
+      {recentEventsColumn ? (
+        <YStack flex={1}>{recentEventsColumn}</YStack>
+      ) : null}
     </XStack>
   );
 }
