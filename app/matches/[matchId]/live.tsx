@@ -167,6 +167,7 @@ export default function LiveRecordingScreen() {
   async function handleUndoLast() {
     if (!lastEvent) return;
     await actionEventRepository.softDelete(lastEvent.id);
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
   }
 
   function isEventInCompletedSet(event: ActionEvent) {
@@ -216,9 +217,11 @@ export default function LiveRecordingScreen() {
       });
       if (wouldCompleteMatch) {
         await matchRepository.update(matchId, { status: "completed" });
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         router.replace({ pathname: "/matches/[matchId]/summary", params: { matchId } });
       } else {
         await setRepository.create({ matchId, setNumber: currentSet!.setNumber + 1 });
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     } finally {
       setFinalizing(false);

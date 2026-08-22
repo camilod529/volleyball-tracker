@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Dialog, ScrollView, Text, XStack, YStack } from "tamagui";
+import { Ionicons } from "@expo/vector-icons";
 
 import type { ActionEvent, Player } from "@/src/db/schema";
 import { ACTION_OUTCOMES, RECORDABLE_ACTION_TYPES, type ActionType } from "@/src/domain/outcomes";
 
-import { IMPACT_COLOR } from "./impactColors";
+import { IMPACT_COLOR, IMPACT_ICON } from "./impactColors";
 
 export interface EventEditResult {
   playerId: string | null;
@@ -119,6 +120,7 @@ function EditEventForm({
                 key={outcome.code}
                 size="$3"
                 backgroundColor={IMPACT_COLOR[outcome.pointImpact]}
+                icon={<Ionicons name={IMPACT_ICON[outcome.pointImpact]} size={16} />}
                 borderWidth={outcome.code === outcomeCode ? 3 : 0}
                 borderColor="$color12"
                 onPress={() => setOutcomeCode(outcome.code)}

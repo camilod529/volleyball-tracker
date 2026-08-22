@@ -8,8 +8,9 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { MigrationGate } from '@/src/db/MigrationGate';
+import { useSettingsStore } from '@/src/state/settingsStore';
 import tamaguiConfig from '@/src/theme/tamagui.config';
-import '@/src/i18n';
+import i18n, { getDeviceLanguage } from '@/src/i18n';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -47,12 +48,20 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const deviceColorScheme = useColorScheme();
+  const themePreference = useSettingsStore((s) => s.themePreference);
+  const languagePreference = useSettingsStore((s) => s.languagePreference);
+  const effectiveColorScheme = themePreference === 'system' ? deviceColorScheme : themePreference;
+
+  useEffect(() => {
+    const language = languagePreference === 'system' ? getDeviceLanguage() : languagePreference;
+    void i18n.changeLanguage(language);
+  }, [languagePreference]);
 
   return (
-    <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme ?? 'light'}>
+    <TamaguiProvider config={tamaguiConfig} defaultTheme={effectiveColorScheme ?? 'light'}>
       <PortalProvider shouldAddRootHost>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <ThemeProvider value={effectiveColorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <MigrationGate>
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

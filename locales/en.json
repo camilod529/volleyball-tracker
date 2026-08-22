@@ -185,5 +185,17 @@
     "exportButton": "Export CSV",
     "exportAll": "Export All (CSV)",
     "exportError": "Something went wrong exporting the file."
+  },
+  "settings": {
+    "appearance": "Appearance",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "language": "Language",
+    "languageSystem": "System",
+    "languageEnglish": "English",
+    "languageSpanish": "Español",
+    "about": "About",
+    "aboutBody": "Volleyball Tracker stores everything on this device. Use Export CSV on a team or match to share stats with an analyst."
   }
 }

@@ -5,7 +5,14 @@ import * as Localization from "expo-localization";
 import en from "../../locales/en.json";
 import es from "../../locales/es.json";
 
-const deviceLanguage = Localization.getLocales()[0]?.languageCode ?? "en";
+export type SupportedLanguage = "en" | "es";
+
+/** The app only ships en/es, so any other device locale falls back to English. */
+export function getDeviceLanguage(): SupportedLanguage {
+  return Localization.getLocales()[0]?.languageCode === "es" ? "es" : "en";
+}
+
+const deviceLanguage = getDeviceLanguage();
 
 // eslint-disable-next-line import/no-named-as-default-member -- i18next's documented API is the default-export chain `i18n.use(...).init(...)`
 void i18n.use(initReactI18next).init({
@@ -14,7 +21,7 @@ void i18n.use(initReactI18next).init({
     en: { translation: en },
     es: { translation: es },
   },
-  lng: deviceLanguage === "es" ? "es" : "en",
+  lng: deviceLanguage,
   fallbackLng: "en",
   interpolation: { escapeValue: false },
 });

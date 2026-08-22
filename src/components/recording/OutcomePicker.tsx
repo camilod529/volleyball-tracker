@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { Button, Text, XStack, YStack } from "tamagui";
+import { Ionicons } from "@expo/vector-icons";
 
 import { ACTION_OUTCOMES, type ActionType } from "@/src/domain/outcomes";
 
-import { IMPACT_COLOR } from "./impactColors";
+import { IMPACT_COLOR, IMPACT_ICON } from "./impactColors";
 
 interface OutcomePickerProps {
   actionType: ActionType;
@@ -25,6 +26,7 @@ export function OutcomePicker({ actionType, onSelect }: OutcomePickerProps) {
             minWidth="45%"
             flexGrow={1}
             backgroundColor={IMPACT_COLOR[outcome.pointImpact]}
+            icon={<Ionicons name={IMPACT_ICON[outcome.pointImpact]} size={18} />}
             onPress={() => onSelect(outcome.code)}
           >
             {t(outcome.labelKey)}
