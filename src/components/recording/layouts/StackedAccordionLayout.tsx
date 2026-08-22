@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next";
-import { Button, Text, XStack, YStack } from "tamagui";
+import { Button, XStack, YStack } from "tamagui";
 
 import { ActionTypeRow } from "@/src/components/recording/ActionTypeRow";
 import { OutcomePicker } from "@/src/components/recording/OutcomePicker";
 import { PlayerGrid } from "@/src/components/recording/PlayerGrid";
+import { SelectedPlayerBanner } from "@/src/components/recording/SelectedPlayerBanner";
 
 import type { RecordingLayoutProps } from "./types";
 
@@ -27,19 +28,13 @@ export function StackedAccordionLayout({
 
   return (
     <YStack flex={1}>
-      <XStack padding="$3" alignItems="center" gap="$2">
-        <Button size="$2" chromeless onPress={onResetPlayer}>
-          {selectedPlayer.number != null ? `#${selectedPlayer.number} ` : ""}
-          {selectedPlayer.name}
-        </Button>
-        <Text color="$color10">›</Text>
-      </XStack>
+      <SelectedPlayerBanner player={selectedPlayer} onChangePlayer={onResetPlayer} />
 
       {!selectedActionType ? (
         <ActionTypeRow onSelect={onSelectAction} />
       ) : (
         <YStack flex={1}>
-          <XStack paddingHorizontal="$3" alignItems="center" gap="$2">
+          <XStack paddingHorizontal="$3" paddingTop="$2" alignItems="center" gap="$2">
             <Button size="$2" chromeless onPress={onClearAction}>
               {t(`actions.${selectedActionType}`)}
             </Button>

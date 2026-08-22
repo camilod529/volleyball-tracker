@@ -4,8 +4,9 @@ import * as Haptics from "expo-haptics";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert } from "react-native";
+import { Alert, Pressable } from "react-native";
 import { Sheet, Spinner, YStack } from "tamagui";
+import { Ionicons } from "@expo/vector-icons";
 
 import { EditEventDialog, type EventEditResult } from "@/src/components/recording/EditEventDialog";
 import { RecentEventsPanel } from "@/src/components/recording/RecentEventsPanel";
@@ -209,18 +210,24 @@ export default function LiveRecordingScreen() {
     ]);
   }
 
-  async function handleFinalizeSet() {
-    if (!setWinner) return;
+  async function finalizeSet(winner: "us" | "opponent", options?: { forceMatchComplete?: boolean }) {
     setFinalizing(true);
     try {
       await setRepository.update(currentSet!.id, {
         status: "completed",
-        winner: setWinner,
+        winner,
         endedAt: new Date().toISOString(),
         ourScore,
         opponentScore,
       });
-      if (wouldCompleteMatch) {
+
+      const projectedWins = {
+        us: setWinsSoFar.us + (winner === "us" ? 1 : 0),
+        opponent: setWinsSoFar.opponent + (winner === "opponent" ? 1 : 0),
+      };
+      const matchComplete = options?.forceMatchComplete || getMatchWinner(projectedWins, format) !== null;
+
+      if (matchComplete) {
         await matchRepository.update(matchId, { status: "completed" });
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         router.replace({ pathname: "/matches/[matchId]/summary", params: { matchId } });
@@ -233,9 +240,48 @@ export default function LiveRecordingScreen() {
     }
   }
 
+  async function handleFinalizeSet() {
+    if (!setWinner) return;
+    await finalizeSet(setWinner);
+  }
+
+  function confirmEndEarly(scope: "set" | "match") {
+    Alert.alert(
+      t(scope === "set" ? "recording.endSetEarlyTitle" : "recording.endMatchEarlyTitle"),
+      t(scope === "set" ? "recording.endSetEarlyMessage" : "recording.endMatchEarlyMessage"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("recording.weWonSet"), onPress: () => finalizeSet("us", { forceMatchComplete: scope === "match" }) },
+        {
+          text: t("recording.theyWonSet"),
+          onPress: () => finalizeSet("opponent", { forceMatchComplete: scope === "match" }),
+        },
+      ]
+    );
+  }
+
+  function handleEndEarlyPress() {
+    Alert.alert(t("recording.endEarlyTitle"), undefined, [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("recording.endSetEarly"), onPress: () => confirmEndEarly("set") },
+      { text: t("recording.endMatchEarly"), style: "destructive", onPress: () => confirmEndEarly("match") },
+    ]);
+  }
+
   return (
     <YStack flex={1}>
-      <Stack.Screen options={{ title: match.opponentName, headerBackVisible: true }} />
+      <Stack.Screen
+        options={{
+          title: match.opponentName,
+          headerBackVisible: true,
+          headerRight: () =>
+            setWinner ? null : (
+              <Pressable onPress={handleEndEarlyPress} hitSlop={12}>
+                <Ionicons name="flag-outline" size={22} />
+              </Pressable>
+            ),
+        }}
+      />
 
       <Scoreboard
         setNumber={currentSet.setNumber}
