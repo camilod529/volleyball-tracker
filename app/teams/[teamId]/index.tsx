@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Alert } from "react-native";
+import { Alert, Pressable } from "react-native";
 import { Button, ListItem, Separator, Text, XStack, YStack } from "tamagui";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -37,7 +37,19 @@ export default function RosterScreen() {
 
   return (
     <YStack flex={1} padding="$4" gap="$3">
-      <Stack.Screen options={{ title: team?.name ?? t("players.title") }} />
+      <Stack.Screen
+        options={{
+          title: team?.name ?? t("players.title"),
+          headerRight: () => (
+            <Pressable
+              onPress={() => router.push({ pathname: "/teams/[teamId]/matches", params: { teamId } })}
+              hitSlop={12}
+            >
+              <Ionicons name="time-outline" size={22} />
+            </Pressable>
+          ),
+        }}
+      />
 
       <XStack justifyContent="space-between" gap="$2">
         <Button

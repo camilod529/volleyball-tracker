@@ -111,7 +111,22 @@
     "startMatch": "Iniciar partido",
     "selectTeam": "Equipo",
     "noActiveTeam": "Selecciona un equipo primero",
-    "noPlayersWarning": "Este equipo aún no tiene jugadoras activas. Agrega la nómina antes de iniciar un partido."
+    "noPlayersWarning": "Este equipo aún no tiene jugadoras activas. Agrega la nómina antes de iniciar un partido.",
+    "matchHistory": "Partidos",
+    "noMatches": "Aún no hay partidos. Inicia uno desde la nómina.",
+    "vs": "vs {{opponent}}",
+    "resumeMatch": "Reanudar",
+    "viewSummary": "Ver resumen",
+    "status": {
+      "setup": "Configuración",
+      "in_progress": "En curso",
+      "completed": "Finalizado"
+    },
+    "summaryTitle": "Resumen del partido",
+    "sets": "Sets",
+    "weWonMatch": "Ganaron el partido",
+    "theyWonMatch": "El rival ganó el partido",
+    "matchInProgress": "Partido en curso"
   },
   "recording": {
     "selectPlayer": "Selecciona jugador/a",
@@ -121,6 +136,11 @@
     "plusUs": "+1 Nosotros",
     "plusOpponent": "+1 Rival",
     "set": "Set {{number}}",
-    "recent": "Reciente"
+    "recent": "Reciente",
+    "setComplete": "Set {{number}} completado",
+    "weWonSet": "Ganaron este set",
+    "theyWonSet": "El rival ganó este set",
+    "startNextSet": "Iniciar set {{number}}",
+    "goToSummary": "Partido finalizado — Ver resumen"
   }
 }

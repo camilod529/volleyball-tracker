@@ -1,8 +1,8 @@
 import { and, asc, eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import * as Haptics from "expo-haptics";
-import { Stack, useLocalSearchParams } from "expo-router";
-import { useEffect } from "react";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Spinner, Text, XStack, YStack } from "tamagui";
 
@@ -10,22 +10,30 @@ import { ActionTypeRow } from "@/src/components/recording/ActionTypeRow";
 import { OutcomePicker } from "@/src/components/recording/OutcomePicker";
 import { PlayerGrid } from "@/src/components/recording/PlayerGrid";
 import { Scoreboard } from "@/src/components/recording/Scoreboard";
+import { SetCompletePanel } from "@/src/components/recording/SetCompletePanel";
 import { db } from "@/src/db/client";
 import { actionEvents, matches, players, sets } from "@/src/db/schema";
-import { actionEventRepository } from "@/src/repositories";
+import {
+  DECIDING_SET,
+  getMatchWinner,
+  getSetWinner,
+  isDecidingSet,
+  STANDARD_SET,
+} from "@/src/domain/scoring";
+import { actionEventRepository, matchRepository, setRepository } from "@/src/repositories";
 import { useMatchSessionStore } from "@/src/state/matchSessionStore";
 
 export default function LiveRecordingScreen() {
   const { matchId } = useLocalSearchParams<{ matchId: string }>();
   const { t } = useTranslation();
+  const router = useRouter();
+  const [finalizing, setFinalizing] = useState(false);
 
   const { data: matchRows } = useLiveQuery(db.select().from(matches).where(eq(matches.id, matchId)));
   const match = matchRows[0];
 
-  const { data: setRows } = useLiveQuery(
-    db.select().from(sets).where(and(eq(sets.matchId, matchId), eq(sets.status, "in_progress")))
-  );
-  const currentSet = setRows[0];
+  const { data: allSets } = useLiveQuery(db.select().from(sets).where(eq(sets.matchId, matchId)));
+  const currentSet = allSets.find((s) => s.status === "in_progress");
 
   const { data: activePlayers } = useLiveQuery(
     db
@@ -64,6 +72,12 @@ export default function LiveRecordingScreen() {
     return () => hardReset();
   }, [matchId, hardReset]);
 
+  useEffect(() => {
+    if (match && allSets.length > 0 && !currentSet) {
+      router.replace({ pathname: "/matches/[matchId]/summary", params: { matchId } });
+    }
+  }, [match, allSets.length, currentSet, matchId, router]);
+
   if (!match || !currentSet) {
     return (
       <YStack flex={1} alignItems="center" justifyContent="center">
@@ -77,6 +91,21 @@ export default function LiveRecordingScreen() {
   const opponentScore = lastEvent?.opponentScoreAfter ?? 0;
   const rallyNumber = 1 + events.filter((e) => e.pointImpact !== "neutral").length;
   const selectedPlayer = activePlayers.find((p) => p.id === selectedPlayerId);
+
+  const format = match.format as "best_of_3" | "best_of_5";
+  const winCondition = isDecidingSet(currentSet.setNumber, format) ? DECIDING_SET : STANDARD_SET;
+  const setWinner = getSetWinner(ourScore, opponentScore, winCondition);
+
+  const completedSets = allSets.filter((s) => s.status === "completed");
+  const setWinsSoFar = {
+    us: completedSets.filter((s) => s.winner === "us").length,
+    opponent: completedSets.filter((s) => s.winner === "opponent").length,
+  };
+  const projectedSetWins = {
+    us: setWinsSoFar.us + (setWinner === "us" ? 1 : 0),
+    opponent: setWinsSoFar.opponent + (setWinner === "opponent" ? 1 : 0),
+  };
+  const wouldCompleteMatch = getMatchWinner(projectedSetWins, format) !== null;
 
   async function logEvent(actionType: string, outcomeCode: string, playerId: string | null) {
     await actionEventRepository.create({
@@ -111,6 +140,26 @@ export default function LiveRecordingScreen() {
     await actionEventRepository.softDelete(lastEvent.id);
   }
 
+  async function handleFinalizeSet() {
+    if (!setWinner) return;
+    setFinalizing(true);
+    try {
+      await setRepository.update(currentSet!.id, {
+        status: "completed",
+        winner: setWinner,
+        endedAt: new Date().toISOString(),
+      });
+      if (wouldCompleteMatch) {
+        await matchRepository.update(matchId, { status: "completed" });
+        router.replace({ pathname: "/matches/[matchId]/summary", params: { matchId } });
+      } else {
+        await setRepository.create({ matchId, setNumber: currentSet!.setNumber + 1 });
+      }
+    } finally {
+      setFinalizing(false);
+    }
+  }
+
   return (
     <YStack flex={1}>
       <Stack.Screen options={{ title: match.opponentName, headerBackVisible: true }} />
@@ -126,7 +175,17 @@ export default function LiveRecordingScreen() {
         onPlusOpponent={handlePlusOpponent}
       />
 
-      {!selectedPlayer ? (
+      {setWinner ? (
+        <SetCompletePanel
+          setNumber={currentSet.setNumber}
+          ourScore={ourScore}
+          opponentScore={opponentScore}
+          winner={setWinner}
+          isMatchComplete={wouldCompleteMatch}
+          submitting={finalizing}
+          onContinue={handleFinalizeSet}
+        />
+      ) : !selectedPlayer ? (
         <PlayerGrid players={activePlayers} recentPlayerId={recentPlayerId} onSelect={selectPlayer} />
       ) : (
         <YStack flex={1}>

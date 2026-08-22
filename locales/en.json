@@ -111,7 +111,22 @@
     "startMatch": "Start Match",
     "selectTeam": "Team",
     "noActiveTeam": "Select a team first",
-    "noPlayersWarning": "This team has no active players yet. Add your roster before starting a match."
+    "noPlayersWarning": "This team has no active players yet. Add your roster before starting a match.",
+    "matchHistory": "Matches",
+    "noMatches": "No matches yet. Start one from the roster.",
+    "vs": "vs {{opponent}}",
+    "resumeMatch": "Resume",
+    "viewSummary": "View Summary",
+    "status": {
+      "setup": "Setup",
+      "in_progress": "In Progress",
+      "completed": "Completed"
+    },
+    "summaryTitle": "Match Summary",
+    "sets": "Sets",
+    "weWonMatch": "You won the match",
+    "theyWonMatch": "Opponent won the match",
+    "matchInProgress": "Match in progress"
   },
   "recording": {
     "selectPlayer": "Select player",
@@ -121,6 +136,11 @@
     "plusUs": "+1 Us",
     "plusOpponent": "+1 Opponent",
     "set": "Set {{number}}",
-    "recent": "Recent"
+    "recent": "Recent",
+    "setComplete": "Set {{number}} Complete",
+    "weWonSet": "You won this set",
+    "theyWonSet": "Opponent won this set",
+    "startNextSet": "Start Set {{number}}",
+    "goToSummary": "Match Complete — View Summary"
   }
 }
