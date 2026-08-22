@@ -8,7 +8,8 @@
     "scheme": "volleyballtracker",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.volleyball-tracker"
     },
     "android": {
       "adaptiveIcon": {

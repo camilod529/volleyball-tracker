@@ -17,7 +17,7 @@ export default function TabLayout() {
         headerShown: useClientOnlyValue(false, true),
       }}>
       <Tabs.Screen
-        name="teams"
+        name="index"
         options={{
           title: t('tabs.teams'),
           tabBarIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} />,
