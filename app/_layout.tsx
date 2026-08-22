@@ -1,3 +1,4 @@
+import 'react-native-get-random-values';
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -6,6 +7,7 @@ import { TamaguiProvider } from 'tamagui';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { MigrationGate } from '@/src/db/MigrationGate';
 import tamaguiConfig from '@/src/theme/tamagui.config';
 import '@/src/i18n';
 
@@ -15,7 +17,6 @@ export {
 } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(tabs)',
 };
 
@@ -51,9 +52,11 @@ function RootLayoutNav() {
   return (
     <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme ?? 'light'}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
+        <MigrationGate>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          </Stack>
+        </MigrationGate>
       </ThemeProvider>
     </TamaguiProvider>
   );

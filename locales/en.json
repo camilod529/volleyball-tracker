@@ -3,5 +3,73 @@
     "teams": "Teams",
     "stats": "Stats",
     "settings": "Settings"
+  },
+  "actions": {
+    "serve": "Serve",
+    "serve_receive": "Serve Receive",
+    "attack": "Attack",
+    "block": "Block",
+    "dig": "Dig",
+    "set": "Set",
+    "freeball": "Freeball",
+    "team_point_adjustment": "Team Point Adjustment"
+  },
+  "outcomes": {
+    "serve": {
+      "ace": "Ace",
+      "in_play": "In Play",
+      "error_net": "Error: Net",
+      "error_out": "Error: Out",
+      "error_foot_fault": "Error: Foot Fault"
+    },
+    "serve_receive": {
+      "perfect": "Perfect Pass",
+      "good": "Good Pass",
+      "poor": "Poor Pass",
+      "overpass": "Overpass",
+      "error": "Error"
+    },
+    "attack": {
+      "kill": "Kill",
+      "in_play": "In Play",
+      "blocked_stuffed": "Blocked (Stuffed)",
+      "blocked_touched": "Blocked (Touched)",
+      "error_net": "Error: Net",
+      "error_out": "Error: Out"
+    },
+    "block": {
+      "stuff": "Stuff Block",
+      "touch": "Touch/Assist",
+      "error": "Error",
+      "blocked_out": "Blocked Out"
+    },
+    "dig": {
+      "good": "Good Dig",
+      "poor": "Poor Dig",
+      "error": "Error"
+    },
+    "set": {
+      "good": "Good Set",
+      "poor": "Poor Set",
+      "error": "Error"
+    },
+    "freeball": {
+      "good": "Good Play",
+      "poor": "Poor Play",
+      "error": "Error"
+    },
+    "team_point_adjustment": {
+      "manual_plus_us": "+1 Us",
+      "manual_plus_opponent": "+1 Opponent"
+    }
+  },
+  "positions": {
+    "setter": "Setter",
+    "outside_hitter": "Outside Hitter",
+    "opposite": "Opposite",
+    "middle_blocker": "Middle Blocker",
+    "libero": "Libero",
+    "defensive_specialist": "Defensive Specialist",
+    "serve_specialist": "Serve Specialist"
   }
 }

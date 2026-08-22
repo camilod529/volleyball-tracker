@@ -3,5 +3,73 @@
     "teams": "Equipos",
     "stats": "Estadísticas",
     "settings": "Ajustes"
+  },
+  "actions": {
+    "serve": "Saque",
+    "serve_receive": "Recepción",
+    "attack": "Remate",
+    "block": "Bloqueo",
+    "dig": "Defensa",
+    "set": "Colocación",
+    "freeball": "Bola libre",
+    "team_point_adjustment": "Ajuste de punto"
+  },
+  "outcomes": {
+    "serve": {
+      "ace": "Ace",
+      "in_play": "En juego",
+      "error_net": "Error: Red",
+      "error_out": "Error: Fuera",
+      "error_foot_fault": "Error: Pisada"
+    },
+    "serve_receive": {
+      "perfect": "Recepción perfecta",
+      "good": "Recepción buena",
+      "poor": "Recepción mala",
+      "overpass": "Sobrepase",
+      "error": "Error"
+    },
+    "attack": {
+      "kill": "Punto de remate",
+      "in_play": "En juego",
+      "blocked_stuffed": "Bloqueado (tapón)",
+      "blocked_touched": "Bloqueo tocado",
+      "error_net": "Error: Red",
+      "error_out": "Error: Fuera"
+    },
+    "block": {
+      "stuff": "Tapón",
+      "touch": "Toque de bloqueo",
+      "error": "Error",
+      "blocked_out": "Bloqueo fuera"
+    },
+    "dig": {
+      "good": "Defensa buena",
+      "poor": "Defensa mala",
+      "error": "Error"
+    },
+    "set": {
+      "good": "Colocación buena",
+      "poor": "Colocación mala",
+      "error": "Error"
+    },
+    "freeball": {
+      "good": "Buena jugada",
+      "poor": "Mala jugada",
+      "error": "Error"
+    },
+    "team_point_adjustment": {
+      "manual_plus_us": "+1 Nosotros",
+      "manual_plus_opponent": "+1 Rival"
+    }
+  },
+  "positions": {
+    "setter": "Colocador/a",
+    "outside_hitter": "Punta",
+    "opposite": "Opuesto/a",
+    "middle_blocker": "Central",
+    "libero": "Líbero",
+    "defensive_specialist": "Especialista defensivo",
+    "serve_specialist": "Especialista de saque"
   }
 }
