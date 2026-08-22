@@ -71,5 +71,35 @@
     "libero": "Libero",
     "defensive_specialist": "Defensive Specialist",
     "serve_specialist": "Serve Specialist"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "confirm": "Confirm"
+  },
+  "teams": {
+    "addTeam": "Add Team",
+    "teamName": "Team name",
+    "noTeams": "No teams yet. Add one to get started.",
+    "setActive": "Set Active",
+    "active": "Active",
+    "deleteConfirmTitle": "Delete team?",
+    "deleteConfirmMessage": "This will remove {{name}} and hide its roster and match history. This can't be undone from here."
+  },
+  "players": {
+    "title": "Roster",
+    "addPlayer": "Add Player",
+    "editPlayer": "Edit Player",
+    "name": "Name",
+    "number": "Number (optional)",
+    "position": "Position",
+    "active": "Active",
+    "inactive": "Inactive",
+    "noPlayers": "No players yet. Add your roster to get started.",
+    "deleteConfirmTitle": "Remove player?",
+    "deleteConfirmMessage": "This will remove {{name}} from the roster. Past match stats are kept."
   }
 }

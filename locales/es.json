@@ -71,5 +71,35 @@
     "libero": "Líbero",
     "defensive_specialist": "Especialista defensivo",
     "serve_specialist": "Especialista de saque"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "confirm": "Confirmar"
+  },
+  "teams": {
+    "addTeam": "Agregar equipo",
+    "teamName": "Nombre del equipo",
+    "noTeams": "Aún no hay equipos. Agrega uno para empezar.",
+    "setActive": "Marcar como activo",
+    "active": "Activo",
+    "deleteConfirmTitle": "¿Eliminar equipo?",
+    "deleteConfirmMessage": "Esto eliminará a {{name}} y ocultará su nómina e historial de partidos. No se puede deshacer desde aquí."
+  },
+  "players": {
+    "title": "Nómina",
+    "addPlayer": "Agregar jugador",
+    "editPlayer": "Editar jugador",
+    "name": "Nombre",
+    "number": "Número (opcional)",
+    "position": "Posición",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "noPlayers": "Aún no hay jugadores. Agrega tu nómina para empezar.",
+    "deleteConfirmTitle": "¿Quitar jugador?",
+    "deleteConfirmMessage": "Esto quitará a {{name}} de la nómina. Las estadísticas de partidos pasados se conservan."
   }
 }

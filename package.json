@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@tamagui/babel-plugin": "^2.7.7",
     "@tamagui/config": "^2.7.7",
     "@tamagui/metro-plugin": "^2.7.7",
