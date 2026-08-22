@@ -1,5 +1,8 @@
 module.exports = {
   preset: "jest-expo",
+  // server/ is a separate NestJS project with its own Jest setup — never
+  // let this project's jest-expo config pick up its test files.
+  testPathIgnorePatterns: ["/node_modules/", "<rootDir>/server/"],
   // jest-expo's default pattern doesn't allow-list `uuid`, which ships ESM
   // in the installed version; widen just that one pattern rather than
   // replacing the whole (carefully tuned) preset list.
