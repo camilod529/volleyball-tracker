@@ -8,6 +8,7 @@ interface SoftDeletableTable extends SQLiteTable {
   id: SQLiteColumn;
   isDeleted: SQLiteColumn;
   updatedAt: SQLiteColumn;
+  syncStatus: SQLiteColumn;
 }
 
 /**
@@ -36,6 +37,7 @@ export function createBaseRepository<TTable extends SoftDeletableTable, TSelect,
           id: uuidv4(),
           createdAt: now,
           updatedAt: now,
+          syncStatus: "pending_sync",
         })
         .returning();
       return row as TSelect;
@@ -44,7 +46,11 @@ export function createBaseRepository<TTable extends SoftDeletableTable, TSelect,
     async update(id: string, input: TUpdate) {
       const [row] = await db
         .update(dynamicTable)
-        .set({ ...(input as Record<string, unknown>), updatedAt: new Date().toISOString() })
+        .set({
+          ...(input as Record<string, unknown>),
+          updatedAt: new Date().toISOString(),
+          syncStatus: "pending_sync",
+        })
         .where(eq(table.id, id))
         .returning();
       return row as TSelect;
@@ -53,7 +59,7 @@ export function createBaseRepository<TTable extends SoftDeletableTable, TSelect,
     async softDelete(id: string) {
       await db
         .update(dynamicTable)
-        .set({ isDeleted: true, updatedAt: new Date().toISOString() })
+        .set({ isDeleted: true, updatedAt: new Date().toISOString(), syncStatus: "pending_sync" })
         .where(eq(table.id, id));
     },
 

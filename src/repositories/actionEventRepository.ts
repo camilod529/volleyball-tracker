@@ -81,6 +81,7 @@ export function createActionEventRepository(db: AppDatabase): ActionEventReposit
           occurredAt: now,
           createdAt: now,
           updatedAt: now,
+          syncStatus: "pending_sync",
         })
         .returning();
       return row;

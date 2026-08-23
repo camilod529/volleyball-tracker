@@ -32,7 +32,7 @@ Both push and pull always process tables in this order — parents before childr
 
 ## Row shapes
 
-Every row across every table carries: `id` (string, client-generated UUID), `createdAt`, `updatedAt` (ISO 8601 strings), `isDeleted` (boolean). `syncStatus` exists in the local schema but is not used by this protocol (kept for a possible future UI indicator) — don't rely on it server-side.
+Every row across every table carries: `id` (string, client-generated UUID), `createdAt`, `updatedAt` (ISO 8601 strings), `isDeleted` (boolean). `syncStatus` (`local_only` | `pending_sync` | `synced`) is client-internal bookkeeping — every local write sets it to `pending_sync`, and it's how the client decides what to include in a push (see below), instead of comparing `updatedAt` against a since-watermark. It's not part of the wire contract: it's sent to the server incidentally (as an extra JSON field) but the server ignores it and never returns it, the same way the server's own `syncedAt` column is never sent to the client.
 
 ```ts
 interface SyncTeamRow {
@@ -86,7 +86,7 @@ No auth. `200 { "status": "ok", "time": "<ISO 8601>" }` — used for deploy plat
 
 ### `POST /sync/push`
 
-Body: `SyncTablesPayload` — every local row with `updatedAt` newer than the client's last successful sync, across all 5 tables.
+Body: `SyncTablesPayload` — every local row not yet marked synced (`syncStatus != 'synced'`), across all 5 tables.
 
 Server behavior, per table in FK order, per row: if no row with that `id` exists, insert it. If one exists, upsert only if `incoming.updatedAt > stored.updatedAt`; otherwise leave the stored row untouched (it's newer or equal — the client will receive it back on its next pull).
 

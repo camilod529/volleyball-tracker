@@ -49,11 +49,24 @@ pieces fit together.
 - **`syncMerge.ts`** — the pure last-write-wins decision function. Kept as an
   independent implementation from the server's copy (`server/src/sync/sync.merge.ts`)
   per `SYNC_PROTOCOL.md` — the two projects don't share code.
-- **`syncEngine.ts`** — `collectLocalChanges`/`applyRemoteChanges` (each
-  independently unit-tested against `createTestDb()`) and `runSync`, the
-  single entry point Settings calls: pushes local changes since the
-  watermark, then pulls and applies remote changes, in the FK-safe table
-  order (`teams` → `players` → `matches` → `sets` → `actionEvents`) both ways.
+- **`syncEngine.ts`** — `collectLocalChanges`, `markRowsSynced`,
+  `applyRemoteChanges` (each independently unit-tested against
+  `createTestDb()`) and `runSync`, the single entry point Settings calls.
+  Push includes every row with `syncStatus != 'synced'` — **not** rows with
+  `updatedAt` newer than the pull watermark. Every local write
+  (`baseRepository.ts`'s create/update/softDelete) sets `syncStatus` to
+  `pending_sync`; after a successful push, `markRowsSynced` clears it back to
+  `synced` for exactly the rows just pushed (guarded by `updatedAt` still
+  matching what was sent, so a row edited again mid-sync stays pending).
+  `applyRemoteChanges` also marks whatever it just pulled in as `synced`.
+  This exists because comparing `updatedAt` (this device's clock) against the
+  pull watermark (the server's clock, see below) has the same failure mode
+  the server's own pull filtering had before its `syncedAt` fix: a lagging
+  device clock could make a brand-new row look "older" than the watermark
+  and get silently, permanently skipped by every future push. `syncStatus`
+  sidesteps clock comparison for this entirely. All 5 tables are still
+  processed in the FK-safe order (`teams` → `players` → `matches` → `sets` →
+  `actionEvents`) both ways.
 
 ## UI
 

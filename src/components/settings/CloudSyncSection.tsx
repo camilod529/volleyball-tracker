@@ -105,7 +105,9 @@ export function CloudSyncSection() {
               accessibilityLabel={
                 showApiKey ? t("settings.hideApiKey") : t("settings.showApiKey")
               }
-              icon={<Ionicons name={showApiKey ? "eye-off" : "eye"} size={18} />}
+              icon={
+                <Ionicons name={showApiKey ? "eye-off" : "eye"} size={18} />
+              }
               onPress={() => setShowApiKey((v) => !v)}
             />
           </XStack>
@@ -148,7 +150,9 @@ export function CloudSyncSection() {
           </Button>
           {lastSyncedAt && (
             <Text color="$color10" fontSize="$2">
-              {t("settings.lastSynced", { date: new Date(lastSyncedAt).toLocaleString() })}
+              {t("settings.lastSynced", {
+                date: new Date(lastSyncedAt).toLocaleString(),
+              })}
             </Text>
           )}
           {phase === "error" && lastError && (
