@@ -26,23 +26,35 @@ const DEFAULT_VALUES: PlayerFormValues = {
   isActive: true,
 };
 
-export function PlayerForm({ initialValues, submitLabel, onSubmit }: PlayerFormProps) {
+export function PlayerForm({
+  initialValues,
+  submitLabel,
+  onSubmit,
+}: PlayerFormProps) {
   const { t } = useTranslation();
   const [name, setName] = useState(initialValues?.name ?? DEFAULT_VALUES.name);
-  const [numberText, setNumberText] = useState(initialValues?.number?.toString() ?? "");
-  const [positions, setPositions] = useState<PlayerPosition[]>(
-    initialValues?.positions ?? DEFAULT_VALUES.positions
+  const [numberText, setNumberText] = useState(
+    initialValues?.number?.toString() ?? "",
   );
-  const [isActive, setIsActive] = useState(initialValues?.isActive ?? DEFAULT_VALUES.isActive);
+  const [positions, setPositions] = useState<PlayerPosition[]>(
+    initialValues?.positions ?? DEFAULT_VALUES.positions,
+  );
+  const [isActive, setIsActive] = useState(
+    initialValues?.isActive ?? DEFAULT_VALUES.isActive,
+  );
 
   const canSubmit = name.trim().length > 0 && positions.length > 0;
 
   function handleSubmit() {
     if (!canSubmit) return;
-    const parsedNumber = numberText.trim().length > 0 ? Number(numberText) : null;
+    const parsedNumber =
+      numberText.trim().length > 0 ? Number(numberText) : null;
     onSubmit({
       name: name.trim(),
-      number: parsedNumber !== null && Number.isFinite(parsedNumber) ? parsedNumber : null,
+      number:
+        parsedNumber !== null && Number.isFinite(parsedNumber)
+          ? parsedNumber
+          : null,
       positions,
       isActive,
     });
@@ -84,7 +96,7 @@ export function PlayerForm({ initialValues, submitLabel, onSubmit }: PlayerFormP
         </Switch>
       </XStack>
 
-      <Button theme="active" disabled={!canSubmit} opacity={canSubmit ? 1 : 0.5} onPress={handleSubmit}>
+      <Button theme="active" opacity={canSubmit ? 1 : 0.5} onPress={handleSubmit}>
         {submitLabel}
       </Button>
     </YStack>
