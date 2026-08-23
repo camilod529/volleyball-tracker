@@ -2,6 +2,7 @@ import 'react-native-get-random-values';
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import * as SystemUI from 'expo-system-ui';
 import { useEffect } from 'react';
 import { PortalProvider, TamaguiProvider } from 'tamagui';
 import 'react-native-reanimated';
@@ -68,12 +69,39 @@ function RootLayoutNav() {
     void useConnectionStore.getState().load();
   }, []);
 
+  const navigationTheme = effectiveColorScheme === 'dark' ? DarkTheme : DefaultTheme;
+
+  // contentStyle/headerStyle below only theme the React view tree — on
+  // Android, the Activity/window itself has its own default background
+  // (white) that's what actually shows through during a screen transition's
+  // compositing, before any view has painted. This is the piece that
+  // controls that.
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync(navigationTheme.colors.background);
+  }, [navigationTheme.colors.background]);
+
   return (
     <TamaguiProvider config={tamaguiConfig} defaultTheme={effectiveColorScheme ?? 'light'}>
       <PortalProvider shouldAddRootHost>
-        <ThemeProvider value={effectiveColorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <ThemeProvider value={navigationTheme}>
           <MigrationGate>
-            <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal' }}>
+            <Stack
+              screenOptions={{
+                headerBackButtonDisplayMode: 'minimal',
+                // Without this, react-native-screens gives each newly
+                // pushed screen a native container that defaults to white
+                // on Android until the JS content paints over it — visible
+                // as a flash mid-transition in dark mode. Matching it to
+                // the active navigation theme up front avoids that.
+                contentStyle: { backgroundColor: navigationTheme.colors.background },
+                // The header bar is a separate native element from the
+                // screen body — content-only theming above doesn't cover
+                // it, so it needs its own explicit colors too.
+                headerStyle: { backgroundColor: navigationTheme.colors.card },
+                headerTintColor: navigationTheme.colors.text,
+                headerTitleStyle: { color: navigationTheme.colors.text },
+              }}
+            >
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             </Stack>
           </MigrationGate>
