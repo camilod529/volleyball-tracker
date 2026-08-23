@@ -5,9 +5,15 @@ import { useTranslation } from 'react-i18next';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { useSettingsStore } from '@/src/state/settingsStore';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const deviceColorScheme = useColorScheme();
+  const themePreference = useSettingsStore((s) => s.themePreference);
+  // Must match _layout.tsx's effectiveColorScheme — otherwise an explicit
+  // in-app theme override renders inconsistently between the tab bar (this
+  // file) and the rest of the app (TamaguiProvider/ThemeProvider).
+  const colorScheme = themePreference === 'system' ? deviceColorScheme : themePreference;
   const { t } = useTranslation();
 
   return (

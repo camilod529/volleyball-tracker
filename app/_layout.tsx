@@ -29,6 +29,11 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+  // Theme preference loads from AsyncStorage asynchronously — rendering
+  // before it resolves would briefly show the "system" default instead of
+  // a saved light/dark override, flashing the wrong theme on cold start.
+  const themeHasHydrated = useSettingsStore((s) => s.hasHydrated);
+  const ready = loaded && themeHasHydrated;
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
@@ -36,12 +41,12 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
+    if (ready) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [ready]);
 
-  if (!loaded) {
+  if (!ready) {
     return null;
   }
 
